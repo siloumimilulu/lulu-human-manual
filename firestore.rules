@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// ============================================================
+// 이 프로젝트는 로그인이 없다. 등록 코드(문서 ID)를 아는 사람만
+// 그 문서 하나를 get할 수 있고, 목록 전체를 훑어보는(list) 건
+// 시청자에게는 절대 허용하지 않는다.
+//
+// 루루(운영자)만 이메일/비밀번호로 로그인해서 전체 목록(list)과
+// 쓰기(write)를 할 수 있다. 아래 LULU_EMAIL을 실제 계정 이메일로
+// 바꿔서 배포해야 한다.
+// ============================================================
+
+function isLulu() {
+  return request.auth != null
+    && request.auth.token.firebase.sign_in_provider == 'password'
+    && request.auth.token.email == 'LULU_EMAIL_여기에_입력';
+}
+
+function isSignedIn() {
+  // 익명 인증 포함, 그냥 로그인은 되어 있는 상태(벨루미 포함)
+  return request.auth != null;
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 신청서 원본 — 코드로 개별 조회만, 목록 조회는 루루만
+    match /applications/{code} {
+      allow get:    if isSignedIn();       // 정확한 코드(문서 ID)를 알아야 get 가능
+      allow list:   if isLulu();           // 선반에 전부 띄우는 건 루루만
+      allow create: if isSignedIn();       // 벨루미가 신청서 제출
+      allow update: if isLulu();           // 인증 처리(status 변경)는 루루만
+      allow delete: if isLulu();
+    }
+
+    // 인증된 인간님 — 마찬가지로 코드로 개별 조회만
+    match /humans/{code} {
+      allow get:    if isSignedIn();
+      allow list:   if isLulu();
+      allow create, update: if isLulu();   // 처방전 작성·도장은 루루만
+      allow delete: if isLulu();
+    }
+
+    // HUMAN 번호 카운터 — 값 자체는 민감하지 않으므로 읽기는 누구나(익명 포함),
+    // 실제 증가(쓰기)는 certify() 트랜잭션을 통해 루루만 할 수 있다.
+    match /counters/{name} {
+      allow read: if isSignedIn();
+      allow write: if isLulu();
+    }
+  }
+}

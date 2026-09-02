@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>루루의 인간 사용설명서 — 벨루미 화면</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script type="module" src="js/firebase.js"></script>
+<style>
+/* ============================================================
+   tokens.css
+   ============================================================ */
+:root{
+  --color-bg:#FAF8F5;
+  --color-surface:#FFFFFF;
+  --color-blue:#A9D5F5;
+  --color-blue-deep:#5FA9DC;
+  --color-mint:#BFE6DA;
+  --color-mint-deep:#4FB295;
+  --color-pink:#F6BBC9;
+  --color-pink-deep:#E0748F;
+  --color-yellow:#F8DF85;
+  --color-lavender:#D9CDF5;
+  --color-lavender-deep:#8C74C4;
+
+  --color-text:#262626;
+  --color-subtext:#777777;
+  --color-disable:#B8B8B8;
+  --color-line:#EDE9E4;
+
+  --radius-sm:12px;
+  --radius-md:18px;
+  --radius-lg:24px;
+  --radius-pill:999px;
+
+  --space-xs:4px;
+  --space-sm:8px;
+  --space-md:16px;
+  --space-lg:24px;
+  --space-xl:32px;
+
+  --shadow-card:0 4px 18px rgba(38,38,38,0.06);
+  --shadow-float:0 -2px 16px rgba(38,38,38,0.05);
+
+  --page-pad:18px;
+  --nav-h:66px;
+}
+
+/* ============================================================
+   base.css
+   ============================================================ */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Pretendard Variable",Pretendard,-apple-system,"Noto Sans KR",sans-serif;
+  background:#EFECE7;
+  color:var(--color-text);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+h1,h2,h3,p,ul{margin:0;padding:0}
+ul{list-style:none}
+
+.app{
+  max-width:520px;
+  margin:0 auto;
+  min-height:100vh;
+  background:var(--color-bg);
+  position:relative;
+  overflow:hidden;
+}
+.view{display:none;padding:0 var(--page-pad) calc(var(--nav-h) + 28px);}
+.view.is-active{display:block}
+
+/* ---- header ---- */
+.appbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 2px 10px;
+}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-mark{
+  width:30px;height:30px;border-radius:var(--radius-pill);
+  background:var(--color-blue);
+  display:grid;place-items:center;
+  position:relative;
+}
+.brand-mark::after{
+  content:"";position:absolute;width:7px;height:7px;border-radius:50%;
+  background:#fff;top:8px;left:8px;opacity:.85;
+}
+.brand-name{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.appbar-sub{font-size:12px;color:var(--color-subtext)}
+
+/* ---- typography ---- */
+.h-hero{font-size:23px;font-weight:700;line-height:1.42;letter-spacing:-.02em}
+.h-sec{font-size:16px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
+.t-body{font-size:14px;color:var(--color-subtext);line-height:1.6}
+.t-small{font-size:12.5px;color:var(--color-subtext)}
+
+/* ============================================================
+   components.css
+   ============================================================ */
+.card{
+  background:var(--color-surface);
+  border:1px solid var(--color-line);
+  border-radius:var(--radius-md);
+  padding:20px;
+  box-shadow:var(--shadow-card);
+}
+.card + .card{margin-top:14px}
+.card-lg{border-radius:var(--radius-lg);padding:24px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:48px;padding:0 22px;
+  border-radius:var(--radius-pill);
+  font-weight:600;font-size:15px;
+  transition:transform .12s ease, background .15s ease;
+}
+.btn:active{transform:scale(.985)}
+.btn:focus-visible{outline:3px solid var(--color-lavender);outline-offset:2px}
+.btn-block{display:flex;width:100%}
+.btn-primary{background:var(--color-blue-deep);color:#fff}
+.btn-secondary{background:#fff;border:1.5px solid var(--color-line);color:var(--color-text)}
+.btn-ghost{color:var(--color-blue-deep);font-weight:600;min-height:44px;padding:0 10px}
+.btn-soft{background:var(--color-mint);color:#22705C}
+.btn:disabled{background:var(--color-disable);color:#fff;cursor:not-allowed}
+
+.chip{
+  display:inline-flex;align-items:center;
+  min-height:40px;padding:0 15px;
+  border-radius:var(--radius-pill);
+  background:#fff;border:1.5px solid var(--color-line);
+  font-size:14px;font-weight:500;
+  transition:background .14s ease,border-color .14s ease,color .14s ease;
+}
+.chip[aria-pressed="true"]{
+  background:var(--color-blue);border-color:var(--color-blue);color:#1C4C6B;
+}
+/* 기록 — 약 선반 */
+.shelf-block{margin-bottom:20px}
+.shelf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end;padding:0 4px}
+.shelf-board{
+  height:10px;margin-top:8px;border-radius:6px;
+  background:linear-gradient(180deg,#E7DCCA,#D4C7B2);
+  box-shadow:0 7px 12px rgba(38,38,38,.10);
+}
+.pouch{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;transition:transform .16s ease}
+.pouch:active{transform:translateY(-3px)}
+.bag{
+  position:relative;width:100%;aspect-ratio:1/1.14;
+  border-radius:8px 8px 16px 16px;
+  background:
+    linear-gradient(118deg, rgba(255,255,255,.75) 0 12%, transparent 12.5% 26%, rgba(38,38,38,.03) 26.5% 33%, transparent 33.5% 58%, rgba(255,255,255,.6) 58.5% 66%, transparent 66.5% 100%),
+    linear-gradient(180deg,#FFFFFF 0%,#F2EEE5 100%);
+  border:1px solid var(--color-line);
+  box-shadow:0 6px 14px rgba(38,38,38,.10);
+  overflow:hidden;
+}
+.bag-band{
+  position:absolute;top:0;left:0;right:0;height:27%;
+  background:linear-gradient(180deg,var(--color-blue),#8FC0E4);
+  box-shadow:inset 0 -3px 5px rgba(38,38,38,.07);
+}
+.bag-band::after{
+  content:"";position:absolute;left:0;right:0;bottom:-2px;height:4px;
+  background:repeating-linear-gradient(90deg, rgba(38,38,38,.10) 0 5px, transparent 5px 10px);
+}
+.bag-clip{position:absolute;right:7px;top:calc(27% + 5px);display:flex;flex-direction:column;gap:3px}
+.bag-clip i{width:4px;height:4px;border-radius:50%;background:#8FC0E4;opacity:.75}
+.bag-window{
+  position:absolute;left:14%;right:14%;top:38%;height:44%;
+  background:rgba(169,213,245,.45);border-radius:4px;
+  display:grid;place-items:center;
+}
+.bag-window svg{width:66%;height:auto;fill:#FFFFFF;opacity:.95}
+.bag.tone-mint .bag-band{background:linear-gradient(180deg,var(--color-mint),#9FD3C2)}
+.bag.tone-mint .bag-window{background:rgba(191,230,218,.55)}
+.bag.tone-pink .bag-band{background:linear-gradient(180deg,var(--color-pink),#E39FB1)}
+.bag.tone-pink .bag-window{background:rgba(246,187,201,.5)}
+.bag.tone-lav .bag-band{background:linear-gradient(180deg,var(--color-lavender),#BFAFE8)}
+.bag.tone-lav .bag-window{background:rgba(217,205,245,.55)}
+.bag.tone-yellow .bag-band{background:linear-gradient(180deg,var(--color-yellow),#E4C765)}
+.bag.tone-yellow .bag-window{background:rgba(248,223,133,.5)}
+.bag-lock{
+  position:absolute;right:7px;bottom:7px;width:20px;height:20px;border-radius:50%;
+  background:rgba(255,255,255,.9);border:1px solid var(--color-line);
+  display:grid;place-items:center;font-size:10px;
+}
+.tag{
+  display:flex;align-items:center;gap:6px;max-width:100%;
+  background:#fff;border:1px solid var(--color-line);border-radius:var(--radius-pill);
+  padding:5px 12px;
+}
+.tag b{font-size:11.5px;font-weight:700;color:var(--color-blue-deep);flex:none}
+.tag span{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag.is-mine{background:var(--color-blue);border-color:var(--color-blue)}
+.tag.is-mine b,.tag.is-mine span{color:#1C4C6B}
+
+.chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.chip-other{border-style:dashed}
+.chip-other[aria-pressed="true"]{background:var(--color-lavender);border-color:var(--color-lavender);border-style:solid;color:#5B449B}
+.other-wrap{display:none;margin-top:10px}
+.other-wrap.is-open{display:block;animation:otherIn .18s ease both}
+@keyframes otherIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(var(--nav-h) + 20px);transform:translateX(-50%) translateY(8px);
+  background:rgba(38,38,38,.92);color:#fff;font-size:13.5px;font-weight:600;
+  padding:12px 20px;border-radius:var(--radius-pill);
+  opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:60;
+}
+.toast.is-on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.field{margin-bottom:18px}
+.field-label{display:block;font-size:14.5px;font-weight:600;margin-bottom:8px}
+.field-help{font-size:12.5px;color:var(--color-subtext);margin:-4px 0 8px}
+.input,.textarea{
+  width:100%;background:#fff;
+  border:1.5px solid var(--color-line);
+  border-radius:var(--radius-sm);
+  padding:13px 14px;font-size:15px;
+  transition:border-color .15s ease;
+}
+.textarea{min-height:88px;resize:vertical}
+.input:focus,.textarea:focus{outline:none;border-color:var(--color-blue)}
+
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  height:26px;padding:0 11px;border-radius:var(--radius-pill);
+  font-size:11.5px;font-weight:700;letter-spacing:.04em;
+}
+.badge-waiting{background:#F1EEEA;color:#8A8177}
+.badge-approved{background:var(--color-mint);color:#22705C}
+.badge-selected{background:var(--color-yellow);color:#836708}
+.badge-managing{background:var(--color-lavender);color:#5B449B}
+.badge-certified{background:var(--color-blue);color:#1C4C6B}
+
+.divider{height:1px;background:var(--color-line);margin:16px 0}
+
+/* ---- bottom nav ---- */
+.tabbar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:520px;height:var(--nav-h);
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);
+  border-top:1px solid var(--color-line);
+  box-shadow:var(--shadow-float);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  padding-bottom:env(safe-area-inset-bottom);
+  z-index:20;
+}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--color-disable)}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tab span{font-size:11px;font-weight:600}
+.tab.is-on{color:var(--color-blue-deep)}
+
+/* ============================================================
+   user.css — 화면별
+   ============================================================ */
+
+/* 홈 hero */
+.hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#EAF5FD 0%,#F4FAFD 100%);
+  border:1px solid #DCEDF8;
+  border-radius:var(--radius-lg);
+  padding:26px 22px 22px;
+}
+.hero-eyebrow{font-size:12.5px;color:#5B87A6;font-weight:600;margin-bottom:9px}
+.hero h1{position:relative;z-index:2}
+.hero p{margin-top:10px;font-size:14px;color:#5B87A6;position:relative;z-index:2}
+.hero .btn{margin-top:20px;position:relative;z-index:2}
+.bubbles{position:absolute;inset:0;z-index:1;pointer-events:none}
+.bubbles i{position:absolute;border-radius:50%;background:#fff;opacity:.55}
+.bubbles i:nth-child(1){width:54px;height:54px;right:-12px;top:14px;opacity:.4}
+.bubbles i:nth-child(2){width:22px;height:22px;right:44px;top:78px}
+.bubbles i:nth-child(3){width:12px;height:12px;right:18px;top:112px;opacity:.7}
+.bubbles i:nth-child(4){width:30px;height:30px;right:80px;top:20px;opacity:.35}
+
+/* DB 통계 */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.stat{
+  background:#fff;border:1px solid var(--color-line);
+  border-radius:var(--radius-md);padding:16px 16px 14px;
+}
+.stat b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.stat small{display:block;font-size:12.5px;color:var(--color-subtext);margin-top:5px}
+.stat.is-mint b{color:var(--color-mint-deep)}
+.stat.is-blue b{color:var(--color-blue-deep)}
+
+/* 과정 스텝 */
+.steps{margin-top:26px}
+.step{display:flex;gap:14px;padding:14px 0;align-items:flex-start}
+.step + .step{border-top:1px solid var(--color-line)}
+.step-num{
+  flex:none;width:28px;height:28px;border-radius:var(--radius-pill);
+  background:var(--color-bg);border:1px solid var(--color-line);
+  display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--color-subtext);
+}
+.step-t{font-size:14.5px;font-weight:600}
+.step-d{font-size:13px;color:var(--color-subtext);margin-top:2px}
+
+/* 신청 폼 */
+.progress{margin:6px 0 22px}
+.progress-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.progress-step{font-size:13px;font-weight:700;color:var(--color-blue-deep)}
+.progress-title{font-size:17px;font-weight:700;letter-spacing:-.01em;margin-top:14px;line-height:1.45}
+.progress-bar{height:6px;background:#EDE9E4;border-radius:var(--radius-pill);overflow:hidden}
+.progress-fill{height:100%;background:var(--color-blue-deep);border-radius:var(--radius-pill);transition:width .3s ease}
+.form-step{display:none}
+.form-step.is-active{display:block}
+.form-nav{display:flex;gap:10px;margin-top:26px}
+.form-nav .btn{flex:1}
+
+.agree{display:flex;gap:11px;align-items:flex-start;padding:11px 0;cursor:pointer}
+.agree + .agree{border-top:1px solid var(--color-line)}
+.agree input{
+  appearance:none;flex:none;width:21px;height:21px;margin-top:1px;
+  border:1.5px solid var(--color-line);border-radius:7px;background:#fff;
+  position:relative;cursor:pointer;
+}
+.agree input:checked{background:var(--color-blue-deep);border-color:var(--color-blue-deep)}
+.agree input:checked::after{
+  content:"";position:absolute;left:6.5px;top:3px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg);
+}
+.agree span{font-size:14px;line-height:1.5}
+.notice{
+  background:#FDF7E8;border:1px solid #F3E6C0;border-radius:var(--radius-sm);
+  padding:14px 16px;font-size:13px;color:#7A6524;line-height:1.6;
+}
+
+/* 완료 화면 */
+.received{text-align:center;padding:44px 0 8px}
+.received-mark{
+  width:76px;height:76px;margin:0 auto 20px;border-radius:var(--radius-pill);
+  background:var(--color-mint);display:grid;place-items:center;
+}
+.received-mark svg{width:34px;height:34px;stroke:#22705C;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.received h2{font-size:20px;font-weight:700}
+.received p{margin-top:10px;font-size:14px;color:var(--color-subtext);line-height:1.65}
+
+.codebox{
+  margin-top:26px;background:#fff;border:1.5px dashed var(--color-blue);
+  border-radius:var(--radius-md);padding:20px;text-align:center;
+}
+.codebox small{font-size:12.5px;color:var(--color-subtext)}
+.codebox b{
+  display:block;margin:10px 0 4px;font-size:24px;font-weight:700;
+  letter-spacing:.10em;color:var(--color-blue-deep);
+}
+.codebox .btn{margin-top:12px}
+
+/* 마이페이지 */
+.status-hero{
+  background:#F3EFFA;border:1px solid #E4DCF3;border-radius:var(--radius-lg);
+  padding:26px 22px;text-align:center;
+}
+.status-hero .badge{margin-bottom:14px}
+.status-hero h2{font-size:19px;font-weight:700}
+.status-hero p{margin-top:9px;font-size:13.5px;color:#6C5C93;line-height:1.6}
+
+/* 사용설명서 카드 — 이 화면의 주인공 */
+.manual{
+  background:#fff;border:1px solid var(--color-line);
+  border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-card);
+}
+.manual-head{
+  background:linear-gradient(180deg,#EAF5FD,#F7FBFE);
+  border-bottom:1px solid #DCEDF8;padding:22px;text-align:center;position:relative;
+}
+.manual-no{font-size:32px;font-weight:700;letter-spacing:-.01em;color:#1C4C6B;line-height:1.1}
+.manual-nick{margin-top:6px;font-size:14px;color:#5B87A6}
+.manual-body{padding:20px 22px}
+.manual-sec + .manual-sec{margin-top:18px;padding-top:18px;border-top:1px solid var(--color-line)}
+.manual-sec h4{font-size:13.5px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;flex:none}
+.dot-blue{background:var(--color-blue-deep)}
+.dot-pink{background:var(--color-pink-deep)}
+.dot-mint{background:var(--color-mint-deep)}
+.manual-sec li{font-size:14px;padding:4px 0 4px 14px;position:relative;line-height:1.55}
+.manual-sec li::before{
+  content:"";position:absolute;left:0;top:12px;width:5px;height:5px;
+  border-radius:50%;background:var(--color-disable);
+}
+.care-li{display:flex;justify-content:space-between;gap:10px}
+.care-li em{font-style:normal;color:var(--color-subtext);font-size:13.5px;flex:none}
+.manual-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 22px;background:var(--color-bg);border-top:1px solid var(--color-line);
+}
+.manual-foot small{font-size:12px;color:var(--color-subtext);display:block}
+.manual-foot strong{font-size:13.5px;font-weight:600}
+.stamp{
+  border:2px solid var(--color-blue-deep);color:var(--color-blue-deep);
+  border-radius:var(--radius-sm);padding:7px 11px;text-align:center;
+  transform:rotate(-7deg);
+}
+.stamp b{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;line-height:1.25}
+.stamp i{font-style:normal;font-size:10px;opacity:.8}
+.is-stamping{animation:stampIn .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes stampIn{from{opacity:0;transform:rotate(-7deg) scale(1.9)}to{opacity:1;transform:rotate(-7deg) scale(1)}}
+
+/* 관리 영상 카드 */
+.media{display:flex;align-items:center;gap:14px}
+.media-thumb{
+  flex:none;width:60px;height:60px;border-radius:var(--radius-sm);
+  background:var(--color-lavender);display:grid;place-items:center;
+}
+.media-thumb svg{width:22px;height:22px;fill:#5B449B}
+.media-t{font-size:15px;font-weight:600}
+.media-d{font-size:12.5px;color:var(--color-subtext);margin-top:3px}
+.media-btns{display:flex;gap:9px;margin-top:16px}
+.media-btns .btn{flex:1;min-height:44px;font-size:14px}
+
+/* 히스토리 */
+.hist{position:relative;padding-left:22px}
+.hist::before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:var(--color-line)}
+.hist-item{position:relative;padding:10px 0}
+.hist-item::before{
+  content:"";position:absolute;left:-21px;top:16px;width:12px;height:12px;
+  border-radius:50%;background:#fff;border:2.5px solid var(--color-blue);
+}
+.hist-item.is-first::before{background:var(--color-blue)}
+.hist-t{font-size:14.5px;font-weight:600}
+.hist-d{font-size:12.5px;color:var(--color-subtext);margin-top:2px}
+
+/* 코드 입력 */
+.code-input{
+  text-align:center;font-size:20px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;padding:16px;
+}
+
+.empty{text-align:center;padding:56px 20px}
+.empty-mark{
+  width:64px;height:64px;margin:0 auto 16px;border-radius:var(--radius-pill);
+  background:#F1EEEA;display:grid;place-items:center;font-size:26px;
+}
+.empty h3{font-size:16px;font-weight:600}
+.empty p{margin-top:8px;font-size:13.5px;color:var(--color-subtext);line-height:1.6}
+.empty .btn{margin-top:20px}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= 홈 ================= -->
+  <section class="view is-active" id="v-home">
+    <header class="appbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div>
+          <div class="brand-name">루루의 인간 사용설명서</div>
+          <div class="appbar-sub">시로우미 미루루</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div class="bubbles"><i></i><i></i><i></i><i></i></div>
+      <div class="hero-eyebrow">인간 관리 프로그램</div>
+      <h1 class="h-hero">인간님을 오래오래<br>소중하게 관리하기 위해</h1>
+      <p>루루가 인간님만의 사용설명서를 만들어 드려요.</p>
+      <button class="btn btn-primary" data-go="apply">인간 등록하기</button>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat is-blue"><b>OPEN</b><small>지금도 접수 중이에요</small></div>
+      <div class="stat is-mint"><b id="homeCertifiedCount">—</b><small>인증 완료된 인간님</small></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="step-t">이번 방송에서 관리할 인간님</div>
+          <div class="step-d">EP.002 · 9월 6일 밤 10시</div>
+        </div>
+        <div style="font-size:22px;font-weight:700;color:var(--color-blue-deep)">4명</div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <h2 class="h-sec">등록하면 이렇게 진행돼요</h2>
+      <div class="card" style="padding:6px 20px">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div><div class="step-t">인간 등록</div><div class="step-d">수면 습관과 좋아하는 소리를 알려주세요.</div></div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div><div class="step-t">루루의 분석</div><div class="step-d">방송에서 루루가 답변을 하나씩 읽고 분석해요.</div></div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div><div class="step-t">맞춤 관리</div><div class="step-d">인간님에게 맞는 ASMR 관리 코스를 진행해요.</div></div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div><div class="step-t">결과 받기</div><div class="step-d">인간번호와 개인 관리 영상이 발급돼요.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-ghost btn-block" style="margin-top:18px" data-go="log">이미 등록했어요 · 등록 코드로 열기</button>
+  </section>
+
+  <!-- ================= 신청 ================= -->
+  <section class="view" id="v-apply">
+    <header class="appbar">
+      <button class="btn btn-ghost" data-go="home" style="padding-left:0">← 홈</button>
+      <div class="appbar-sub">인간 등록</div>
+    </header>
+
+    <div class="progress">
+      <div class="progress-top">
+        <span class="progress-step"><span id="stepNow">1</span> / 4</span>
+        <span class="t-small" id="stepName">수면 습관</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:25%"></div></div>
+      <div class="progress-title" id="stepTitle">인간님의 수면 습관을 알려주세요.</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="form-step is-active" data-step="1">
+      <div class="card">
+        <div class="field">
+          <label class="field-label" for="f-nick">방송에서 불릴 닉네임</label>
+          <p class="field-help">실명은 적지 말아 주세요.</p>
+          <input class="input" id="f-nick" placeholder="예: 물방울">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f-sleep">잠이 안 올 때 주로 하는 행동</label>
+          <textarea class="textarea" id="f-sleep" placeholder="예: 유튜브 쇼츠를 계속 봐요"></textarea>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field-label">요즘 가장 힘든 시간대</label>
+          <div class="chip-group" id="timeChips">
+            <button class="chip" aria-pressed="false">아침</button>
+            <button class="chip" aria-pressed="false">낮</button>
+            <button class="chip" aria-pressed="false">퇴근길</button>
+            <button class="chip" aria-pressed="false">밤 11시 이후</button>
+            <button class="chip" aria-pressed="false">새벽</button>
+            <button class="chip chip-other" aria-pressed="false" data-other="other-time">기타 +</button>
+          </div>
+          <div class="other-wrap" id="other-time">
+            <input class="input" placeholder="힘든 시간대를 직접 적어주세요">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="form-step" data-step="2">
+      <div class="card">
+        <div class="field">
+          <label class="field-label">좋아하는 ASMR 소리</label>
+          <p class="field-help">여러 개 고를 수 있어요.</p>
+          <div class="chip-group" id="soundChips">
+            <button class="chip" aria-pressed="false">머리 쓰담</button>
+            <button class="chip" aria-pressed="false">귀마사지</button>
+            <button class="chip" aria-pressed="false">귀청소</button>
+            <button class="chip" aria-pressed="false">심음</button>
+            <button class="chip" aria-pressed="false">속삭임</button>
+            <button class="chip" aria-pressed="false">토닥토닥</button>
+            <button class="chip" aria-pressed="false">곁잠</button>
+            <button class="chip" aria-pressed="false">단어반복</button>
+            <button class="chip chip-other" aria-pressed="false" data-other="other-sound">기타 +</button>
+          </div>
+          <div class="other-wrap" id="other-sound">
+            <input class="input" placeholder="좋아하는 소리를 직접 적어주세요">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field-label" for="f-dislike">반대로 힘든 소리가 있다면</label>
+          <input class="input" id="f-dislike" placeholder="예: 씹는 소리">
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="form-step" data-step="3">
+      <div class="card">
+        <div class="field">
+          <label class="field-label" for="f-phrase">최근 자주 하는 말</label>
+          <input class="input" id="f-phrase" placeholder="예: 아 피곤해">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f-stress">스트레스 받을 때 하는 행동</label>
+          <textarea class="textarea" id="f-stress" placeholder="예: 아무 말 없이 게임만 켜요"></textarea>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field-label" for="f-praise">들으면 기분 좋아지는 칭찬</label>
+          <input class="input" id="f-praise" placeholder="예: 오늘도 잘했어요">
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="form-step" data-step="4">
+      <div class="card">
+        <div class="field">
+          <label class="field-label" for="f-care">루루에게 받고 싶은 관리</label>
+          <textarea class="textarea" id="f-care" placeholder="예: 아무 생각 없이 잠들게 해주세요"></textarea>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field-label" for="f-msg">루루가 알아줬으면 하는 한 가지</label>
+          <textarea class="textarea" id="f-msg" placeholder="한 문장이면 충분해요"></textarea>
+        </div>
+      </div>
+
+      <div class="notice" style="margin-top:14px">
+        실명, 전화번호, 주소는 적지 말아 주세요.<br>
+        의료·정신건강·법률 상담이 필요한 내용은 방송에서 다루지 않아요.
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <button class="btn btn-secondary" id="btnPrev" style="display:none">이전</button>
+      <button class="btn btn-primary" id="btnNext">다음</button>
+    </div>
+  </section>
+
+  <!-- ================= 등록 완료 ================= -->
+  <section class="view" id="v-done">
+    <div class="received">
+      <div class="received-mark">
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h2>루루가 데이터를 받아두었어요</h2>
+      <p>지금은 분석 대기 중이에요.<br>방송에서 선정되면 루루가 직접 읽고 분석해요.</p>
+    </div>
+
+    <div class="codebox">
+      <small>내 등록 코드</small>
+      <b id="regCode">LULU-8F2K-3QD7</b>
+      <small>이 코드로 언제든 내 기록을 열 수 있어요.</small>
+      <button class="btn btn-soft btn-block" id="btnCopyCode">코드 복사하기</button>
+    </div>
+
+    <div class="notice" style="margin-top:16px">
+      코드를 잃어버리면 결과물을 다시 찾기 어려워요. 캡처해서 보관해 주세요.
+    </div>
+
+    <button class="btn btn-primary btn-block" style="margin-top:20px" data-go="log">내 상태 확인하기</button>
+  </section>
+
+  <!-- ================= 등록 코드로 연 결과 · 인증 전 ================= -->
+  <section class="view" id="v-my-wait">
+    <header class="appbar">
+      <button class="btn btn-ghost" data-go="log" style="padding-left:0">← 기록</button>
+      <div class="appbar-sub">내 등록 상태</div>
+    </header>
+
+    <div class="status-hero">
+      <span class="badge badge-waiting">WAITING</span>
+      <h2>아직 루루의 분석을 기다리고 있어요</h2>
+      <p>물방울 인간님의 데이터는 안전하게 보관 중이에요.<br>선정되면 이 화면에서 바로 알려드릴게요.</p>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3 class="h-sec">등록 정보</h3>
+      <div style="display:flex;justify-content:space-between;padding:7px 0">
+        <span class="t-small">닉네임</span><strong style="font-size:14px">물방울</strong>
+      </div>
+      <div class="divider" style="margin:6px 0"></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0">
+        <span class="t-small">등록일</span><strong style="font-size:14px">2026.08.29</strong>
+      </div>
+      <div class="divider" style="margin:6px 0"></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;align-items:center">
+        <span class="t-small">검수 상태</span><span class="badge badge-approved">APPROVED</span>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top:14px">
+      승인된 인간님만 방송 선정 대상이 돼요. 선정은 랜덤으로 진행돼요.
+    </div>
+  </section>
+
+  <!-- ================= MY · 인증 후 ================= -->
+  <section class="view" id="v-my-cert">
+    <header class="appbar">
+      <button class="btn btn-ghost" data-go="log" style="padding-left:0">← 기록</button>
+      <span class="badge badge-certified">CERTIFIED</span>
+    </header>
+
+    <div class="manual">
+      <div class="manual-head">
+        <div class="manual-no" id="mNo">HUMAN No.024</div>
+        <div class="manual-nick" id="mNick">물방울 인간님</div>
+      </div>
+      <div class="manual-body">
+        <div class="manual-sec">
+          <h4><i class="dot dot-blue"></i>특징</h4>
+          <ul id="mFeatures">
+            <li>생각이 많음</li>
+            <li>자기 전에 휴대폰을 오래 봄</li>
+            <li>칭찬에 약함</li>
+          </ul>
+        </div>
+        <div class="manual-sec">
+          <h4><i class="dot dot-pink"></i>취급주의</h4>
+          <ul id="mCautions">
+            <li>밤 11시 이후 혼자 오래 두지 말 것</li>
+            <li>생각할 시간을 너무 많이 주지 말 것</li>
+          </ul>
+        </div>
+        <div class="manual-sec">
+          <h4><i class="dot dot-mint"></i>권장 관리법</h4>
+          <ul id="mCares">
+            <li class="care-li"><span>머리 쓰담</span><em>3분</em></li>
+            <li class="care-li"><span>귀마사지</span><em>5분</em></li>
+            <li class="care-li"><span>“잘했어요”</span><em>3회</em></li>
+          </ul>
+        </div>
+      </div>
+      <div class="manual-foot">
+        <div>
+          <small>관리 담당</small>
+          <strong>시로우미 미루루</strong>
+          <small style="margin-top:6px">관리 상태 · STABLE</small>
+        </div>
+        <div class="stamp" id="stamp">
+          <b>LULU<br>CERTIFIED</b>
+          <i id="mStampNo">No.024</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="media">
+        <div class="media-thumb">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <div>
+          <div class="media-t">루루의 맞춤 관리 영상</div>
+          <div class="media-d">08:34 · 방송에서 녹음한 개인 ASMR</div>
+        </div>
+      </div>
+      <div class="media-btns">
+        <button class="btn btn-secondary">재생하기</button>
+        <button class="btn btn-primary" id="btnSaveImg">사용설명서 다운로드</button>
+      </div>
+    </div>
+
+    <div style="margin-top:26px">
+      <h2 class="h-sec">관리 기록</h2>
+      <div class="card">
+        <div class="hist">
+          <div class="hist-item is-first">
+            <div class="hist-t">첫 인간 사용설명서</div>
+            <div class="hist-d">EP.002 · 2026.09.06</div>
+          </div>
+          <div class="hist-item">
+            <div class="hist-t">다음 관리 예정</div>
+            <div class="hist-d">아직 잡히지 않았어요</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 기록 · 약 선반 ================= -->
+  <section class="view" id="v-log">
+    <header class="appbar">
+      <div class="brand-name">기록</div>
+      <div class="appbar-sub">LULU HUMAN DATABASE</div>
+    </header>
+
+    <div class="card card-lg">
+      <h3 class="h-sec">내 처방전 열기</h3>
+      <p class="field-help" style="margin-top:-4px">등록할 때 받은 코드를 입력해 주세요.</p>
+      <input class="input code-input" id="logCode" placeholder="LULU-0000-0000" autocomplete="off">
+      <button class="btn btn-primary btn-block" id="btnOpenCode" style="margin-top:12px">처방전 열기</button>
+    </div>
+
+    <div style="margin-top:26px" class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="t-small">지금까지 인증된 인간님</span>
+        <b id="certifiedCount" style="font-size:20px;color:var(--color-blue-deep)">—</b>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 탭바 ================= -->
+  <nav class="tabbar">
+    <button class="tab is-on" data-go="home">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>홈</span>
+    </button>
+    <button class="tab" data-go="apply">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>신청</span>
+    </button>
+    <button class="tab" data-go="log">
+      <svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg><span>기록</span>
+    </button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- 화면 전환 ---------- */
+const views = {
+  home:'v-home', apply:'v-apply', done:'v-done',
+  'my-wait':'v-my-wait', 'my-cert':'v-my-cert', log:'v-log'
+};
+const tabOf = { home:'home', apply:'apply', log:'log', 'my-cert':'log', 'my-wait':'log' };
+
+function go(name){
+  const id = views[name];
+  if(!id) return;
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('is-active', v.id===id));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('is-on', t.dataset.go===tabOf[name]));
+  window.scrollTo(0,0);
+  if(name==='my-cert') replayStamp();
+  if(name==='log') loadCertifiedCount();
+}
+
+let countLoaded = false;
+async function loadCertifiedCount(){
+  if(countLoaded) return; // 탭 옮길 때마다 다시 불러올 필요는 없다
+  try{
+    const n = await window.LuluDB.getCertifiedCount();
+    document.getElementById('certifiedCount').textContent = n + '명';
+    const homeEl = document.getElementById('homeCertifiedCount');
+    if(homeEl) homeEl.textContent = n;
+    countLoaded = true;
+  }catch(err){ console.error(err); }
+}
+loadCertifiedCount(); // 홈이 첫 화면이니 시작하자마자 한 번 불러온다
+document.addEventListener('click', e=>{
+  const el = e.target.closest('[data-go]');
+  if(el) go(el.dataset.go);
+});
+
+/* ---------- 칩 토글 ---------- */
+document.addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  const on = chip.getAttribute('aria-pressed') !== 'true';
+  chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+
+  // "기타 +" 칩이면 직접 입력란을 열고 닫는다
+  const targetId = chip.dataset.other;
+  if(targetId){
+    const wrap = document.getElementById(targetId);
+    wrap.classList.toggle('is-open', on);
+    if(on) wrap.querySelector('input').focus();
+    else wrap.querySelector('input').value = '';
+  }
+});
+
+/* ---------- 스텝 폼 ---------- */
+const STEPS = [
+  {name:'수면 습관',  title:'인간님의 수면 습관을 알려주세요.'},
+  {name:'좋아하는 소리', title:'인간님이 좋아하는 소리를 알려주세요.'},
+  {name:'요즘 상태',  title:'요즘 인간님의 상태를 알려주세요.'},
+  {name:'받고 싶은 관리', title:'루루에게 받고 싶은 관리는 무엇인가요?'}
+];
+let step = 1;
+const $now=document.getElementById('stepNow'), $name=document.getElementById('stepName'),
+      $title=document.getElementById('stepTitle'), $fill=document.getElementById('progressFill'),
+      $prev=document.getElementById('btnPrev'), $next=document.getElementById('btnNext');
+
+function renderStep(){
+  document.querySelectorAll('.form-step').forEach(s=>
+    s.classList.toggle('is-active', Number(s.dataset.step)===step));
+  $now.textContent = step;
+  $name.textContent = STEPS[step-1].name;
+  $title.textContent = STEPS[step-1].title;
+  $fill.style.width = (step/4*100)+'%';
+  $prev.style.display = step===1 ? 'none' : 'flex';
+  $next.textContent = step===4 ? '등록하기' : '다음';
+  window.scrollTo(0,0);
+}
+$prev.addEventListener('click', ()=>{ if(step>1){step--; renderStep();} });
+$next.addEventListener('click', async ()=>{
+  if(step<4){ step++; renderStep(); return; }
+  await submitApplicationToFirebase();
+});
+renderStep();
+
+/* ---- 칩 그룹에서 선택된 값 읽기 (기타 입력 포함) ---- */
+function readChips(groupId, otherId){
+  const chosen = Array.from(document.querySelectorAll('#'+groupId+' .chip:not(.chip-other)[aria-pressed="true"]'))
+    .map(c => c.textContent.trim());
+  const otherChip = document.querySelector('[data-other="'+otherId+'"]');
+  if(otherChip && otherChip.getAttribute('aria-pressed') === 'true'){
+    const v = document.querySelector('#'+otherId+' input').value.trim();
+    if(v) chosen.push(v);
+  }
+  return chosen;
+}
+
+/* ---- 폼 전체를 모아 Firestore에 저장 ---- */
+async function submitApplicationToFirebase(){
+  const nickname = document.getElementById('f-nick').value.trim() || '이름 없는';
+  const payload = {
+    nickname,
+    sleepBehavior: document.getElementById('f-sleep').value.trim(),
+    difficultTime: readChips('timeChips', 'other-time'),
+    favoriteSounds: readChips('soundChips', 'other-sound'),
+    dislikedSounds: document.getElementById('f-dislike').value.trim(),
+    recentPhrase: document.getElementById('f-phrase').value.trim(),
+    stressBehavior: document.getElementById('f-stress').value.trim(),
+    favoritePraise: document.getElementById('f-praise').value.trim(),
+    requestedCare: document.getElementById('f-care').value.trim(),
+    messageToLulu: document.getElementById('f-msg').value.trim()
+  };
+
+  $next.disabled = true;
+  $next.textContent = '등록하는 중…';
+  try{
+    const code = await window.LuluDB.submitApplication(payload);
+    document.getElementById('regCode').textContent = code;
+    go('done');
+    step = 1; renderStep();
+    // 다음 신청을 위해 폼을 비워둔다
+    ['f-nick','f-sleep','f-dislike','f-phrase','f-stress','f-praise','f-care','f-msg']
+      .forEach(id => document.getElementById(id).value = '');
+    document.querySelectorAll('.chip[aria-pressed="true"]').forEach(c => c.setAttribute('aria-pressed','false'));
+    document.querySelectorAll('.other-wrap.is-open').forEach(w => w.classList.remove('is-open'));
+  }catch(err){
+    console.error(err);
+    toast('등록에 실패했어요. 다시 시도해 주세요');
+  }finally{
+    $next.disabled = false;
+    $next.textContent = step === 4 ? '등록하기' : '다음';
+  }
+}
+
+/* ---------- 인증 도장 ---------- */
+function replayStamp(){
+  const s = document.getElementById('stamp');
+  s.classList.remove('is-stamping');
+  void s.offsetWidth;
+  s.classList.add('is-stamping');
+}
+
+/* ---------- 토스트 ---------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('is-on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('is-on'), 2000);
+}
+
+/* ---------- 등록 코드 클립보드 복사 ---------- */
+document.getElementById('btnCopyCode').addEventListener('click', async ()=>{
+  const code = document.getElementById('regCode').textContent.trim();
+  try{
+    // 최신 브라우저 경로
+    await navigator.clipboard.writeText(code);
+    toast('등록 코드를 복사했어요');
+  }catch(err){
+    // iOS 사파리 구버전 등 fallback
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    ta.setAttribute('readonly','');
+    ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, code.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast(ok ? '등록 코드를 복사했어요' : '복사에 실패했어요. 길게 눌러 복사해 주세요');
+  }
+});
+
+/* ============================================================
+   사용설명서 이미지 — 1080 × 1620 PNG를 canvas로 직접 그린다.
+   외부 라이브러리를 쓰지 않으므로 폰트 로딩만 기다리면 결과가 항상 동일하다.
+   실제 서비스에서는 아래 MANUAL 객체를 Firestore 문서로 교체하면 된다.
+   ============================================================ */
+const MANUAL = {
+  no: 'HUMAN No.024',
+  nick: '물방울 인간님',
+  features: ['생각이 많음','자기 전에 휴대폰을 오래 봄','칭찬에 약함'],
+  cautions: ['밤 11시 이후 혼자 오래 두지 말 것','생각할 시간을 너무 많이 주지 말 것'],
+  cares: [['머리 쓰담','3분'],['귀마사지','5분'],['“잘했어요”','3회']],
+  status: 'STABLE',
+  by: '시로우미 미루루',
+  fileNo: '024',
+  videoUrl: null   // MP4 렌더링이 붙으면 여기에 URL이 들어간다
+};
+
+/* ============================================================
+   기록 — 등록 코드로 실제 Firestore 조회
+   ============================================================ */
+
+/* ---- 처방전 채우기 ----
+   Firestore humans/{code} 문서 형태: {
+     humanNumber, nickname, features:[string], cautions:[string],
+     cares:[{name, duration}], status
+   } */
+function openManual(h){
+  const no = String(h.humanNumber).padStart(3,'0');
+  document.getElementById('mNo').textContent      = 'HUMAN No.' + no;
+  document.getElementById('mNick').textContent    = h.nickname + ' 인간님';
+  document.getElementById('mStampNo').textContent = 'No.' + no;
+  document.getElementById('mFeatures').innerHTML  = (h.features||[]).map(f => '<li>' + f + '</li>').join('');
+  document.getElementById('mCautions').innerHTML  = (h.cautions||[]).map(c => '<li>' + c + '</li>').join('');
+  document.getElementById('mCares').innerHTML =
+    (h.cares||[]).map(c => '<li class="care-li"><span>' + c.name + '</span><em>' + (c.duration||'') + '</em></li>').join('');
+
+  // 이미지·MP4 다운로드에 쓰일 데이터도 함께 갈아끼운다
+  MANUAL.no = 'HUMAN No.' + no;
+  MANUAL.nick = h.nickname + ' 인간님';
+  MANUAL.features = h.features || [];
+  MANUAL.cautions = h.cautions || [];
+  MANUAL.cares = (h.cares||[]).map(c => [c.name, c.duration || '']);
+  MANUAL.status = h.status || 'STABLE';
+  MANUAL.fileNo = no;
+  MANUAL.videoUrl = h.videoUrl || null;
+
+  go('my-cert');
+}
+
+/* ---- 코드 조회 ---- */
+async function lookupCode(){
+  const raw = document.getElementById('logCode').value.trim();
+  if(!raw){ toast('등록 코드를 입력해 주세요'); return; }
+
+  const btn = document.getElementById('btnOpenCode');
+  btn.disabled = true; btn.textContent = '찾는 중…';
+  try{
+    const result = await window.LuluDB.lookupByCode(raw);
+    if(result.state === 'certified'){ openManual(result.data); return; }
+    if(result.state === 'pending'){ go('my-wait'); return; }
+    toast('해당하는 등록 코드를 찾지 못했어요');
+  }catch(err){
+    console.error(err);
+    toast('조회에 실패했어요. 잠시 후 다시 시도해 주세요');
+  }finally{
+    btn.disabled = false; btn.textContent = '처방전 열기';
+  }
+}
+document.getElementById('btnOpenCode').addEventListener('click', lookupCode);
+document.getElementById('logCode').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') lookupCode();
+});
+
+function rr(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function drawManual(){
+  // 폰에서 보던 카드와 비슷한 세로 비율(2:3)로 뽑는다.
+  const W = 1080, H = 1620;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  c.style.width = W + 'px'; c.style.height = H + 'px';
+  const x = c.getContext('2d');
+  x.setTransform(1,0,0,1,0,0);
+  const F = '"Pretendard Variable", Pretendard, sans-serif';
+
+  // 배경
+  x.fillStyle = '#FAF8F5'; x.fillRect(0,0,W,H);
+
+  // 카드
+  const cx = 60, cy = 60, cw = W-120, ch = H-120;
+  const HEAD = 400;
+  x.save();
+  x.shadowColor = 'rgba(38,38,38,0.08)'; x.shadowBlur = 30; x.shadowOffsetY = 8;
+  x.fillStyle = '#FFFFFF';
+  rr(x,cx,cy,cw,ch,44); x.fill();
+  x.restore();
+
+  // 헤더 (하늘색 그라데이션)
+  x.save();
+  rr(x,cx,cy,cw,ch,44); x.clip();
+  const g = x.createLinearGradient(0,cy,0,cy+HEAD);
+  g.addColorStop(0,'#EAF5FD'); g.addColorStop(1,'#F7FBFE');
+  x.fillStyle = g; x.fillRect(cx,cy,cw,HEAD);
+  // 기포 장식
+  x.fillStyle = 'rgba(255,255,255,0.75)';
+  [[cx+cw-70,cy+80,56],[cx+cw-155,cy+160,22],[cx+72,cy+295,32]].forEach(([bx,by,br])=>{
+    x.beginPath(); x.arc(bx,by,br,0,Math.PI*2); x.fill();
+  });
+  x.restore();
+  x.strokeStyle = '#DCEDF8'; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(cx,cy+HEAD); x.lineTo(cx+cw,cy+HEAD); x.stroke();
+
+  x.textAlign = 'center';
+  x.fillStyle = '#5B87A6'; x.font = `600 28px ${F}`;
+  x.fillText('LULU CERTIFIED', W/2, cy+128);
+  x.fillStyle = '#1C4C6B'; x.font = `700 92px ${F}`;
+  x.fillText(MANUAL.no, W/2, cy+248);
+  x.fillStyle = '#5B87A6'; x.font = `500 34px ${F}`;
+  x.fillText(MANUAL.nick, W/2, cy+312);
+
+  // 본문 섹션
+  x.textAlign = 'left';
+  let y = cy + HEAD + 92;
+  const px = cx + 60;
+  const maxW = cw - 120;
+
+  function section(title, color, lines){
+    x.fillStyle = color;
+    x.beginPath(); x.arc(px+8, y-10, 8, 0, Math.PI*2); x.fill();
+    x.fillStyle = '#262626'; x.font = `700 32px ${F}`;
+    x.fillText(title, px+32, y);
+    y += 50;
+    x.font = `500 30px ${F}`;
+    lines.forEach(line=>{
+      x.fillStyle = '#B8B8B8';
+      x.beginPath(); x.arc(px+7, y-10, 5.5, 0, Math.PI*2); x.fill();
+      x.fillStyle = '#262626';
+      if(Array.isArray(line)){
+        x.fillText(line[0], px+28, y);
+        x.textAlign = 'right';
+        x.fillStyle = '#777777';
+        x.fillText(line[1], px+maxW, y);
+        x.textAlign = 'left';
+      }else{
+        x.fillText(line, px+28, y);
+      }
+      y += 52;
+    });
+    y += 36;
+    x.strokeStyle = '#EDE9E4'; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(px, y-40); x.lineTo(px+maxW, y-40); x.stroke();
+  }
+
+  section('특징', '#5FA9DC', MANUAL.features);
+  section('취급주의', '#E0748F', MANUAL.cautions);
+  section('권장 관리법', '#4FB295', MANUAL.cares);
+
+  // 푸터 — 카드 아래쪽에 고정
+  const fy = cy + ch - 170;
+  x.strokeStyle = '#EDE9E4'; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(px, fy-56); x.lineTo(px+maxW, fy-56); x.stroke();
+
+  x.fillStyle = '#777777'; x.font = `500 26px ${F}`;
+  x.fillText('관리 담당', px, fy);
+  x.fillStyle = '#262626'; x.font = `600 32px ${F}`;
+  x.fillText(MANUAL.by, px, fy+46);
+  x.fillStyle = '#777777'; x.font = `500 26px ${F}`;
+  x.fillText('관리 상태 · ' + MANUAL.status, px, fy+94);
+
+  // 도장
+  x.save();
+  x.translate(cx+cw-170, fy+38);
+  x.rotate(-7*Math.PI/180);
+  x.strokeStyle = '#5FA9DC'; x.lineWidth = 5;
+  rr(x,-118,-58,236,116,16); x.stroke();
+  x.fillStyle = '#5FA9DC'; x.textAlign = 'center';
+  x.font = `800 27px ${F}`;
+  x.fillText('LULU', 0, -10);
+  x.fillText('CERTIFIED', 0, 22);
+  x.font = `600 20px ${F}`;
+  x.fillText(MANUAL.no.replace('HUMAN ',''), 0, 44);
+  x.restore();
+
+  return c;
+}
+
+/* ============================================================
+   사용설명서 다운로드
+   실제 서비스에서는 사용설명서 + 관리 음성이 합쳐진 MP4가 지급된다.
+   MANUAL.videoUrl 이 채워져 있으면 그 파일을, 아직 렌더링 전이면
+   같은 내용의 이미지를 대신 내려준다.
+   ============================================================ */
+document.getElementById('btnSaveImg').addEventListener('click', async ()=>{
+  if(MANUAL.videoUrl){
+    const a = document.createElement('a');
+    a.href = MANUAL.videoUrl;
+    a.download = 'LULU_HUMAN_' + MANUAL.fileNo + '_MANAGEMENT_RECORD.mp4';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('사용설명서를 저장했어요');
+    return;
+  }
+  try{
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    const canvas = drawManual();
+    canvas.toBlob(blob=>{
+      if(!blob){ toast('파일을 만들지 못했어요'); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'LULU_HUMAN_' + MANUAL.fileNo + '_MANUAL.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1500);
+      toast('사용설명서를 저장했어요');
+    }, 'image/png');
+  }catch(err){
+    console.error(err);
+    toast('저장에 실패했어요. 다시 시도해 주세요');
+  }
+});
+</script>
+</body>
+</html>
