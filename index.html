@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>루루의 인간 사용설명서 — 벨루미 화면</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/firebase.js?v=3"></script>
 <style>
 /* ============================================================
    tokens.css
@@ -210,7 +210,7 @@ ul{list-style:none}
   position:fixed;left:50%;bottom:calc(var(--nav-h) + 20px);transform:translateX(-50%) translateY(8px);
   background:rgba(38,38,38,.92);color:#fff;font-size:13.5px;font-weight:600;
   padding:12px 20px;border-radius:var(--radius-pill);
-  opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:60;
+  opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:80;
 }
 .toast.is-on{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -404,7 +404,7 @@ ul{list-style:none}
 .is-stamping{animation:stampIn .45s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes stampIn{from{opacity:0;transform:rotate(-7deg) scale(1.9)}to{opacity:1;transform:rotate(-7deg) scale(1)}}
 
-/* 관리 영상 카드 */
+/* 관리 음성 카드 */
 .media{display:flex;align-items:center;gap:14px}
 .media-thumb{
   flex:none;width:60px;height:60px;border-radius:var(--radius-sm);
@@ -448,6 +448,25 @@ ul{list-style:none}
 .empty h3{font-size:16px;font-weight:600}
 .empty p{margin-top:8px;font-size:13.5px;color:var(--color-subtext);line-height:1.6}
 .empty .btn{margin-top:20px}
+
+/* ---- 봉투 열기 시트 ---- */
+.modal{position:fixed;inset:0;z-index:70;display:none;align-items:flex-end;justify-content:center}
+.modal.is-on{display:flex}
+.modal-dim{position:absolute;inset:0;background:rgba(38,38,38,.45)}
+.modal-sheet{
+  position:relative;width:100%;max-width:520px;background:#fff;
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  padding:22px 22px calc(24px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 30px rgba(38,38,38,.18);
+  animation:sheetUp .22s ease both;
+}
+@keyframes sheetUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-grip{width:38px;height:4px;border-radius:var(--radius-pill);background:var(--color-line);margin:0 auto 20px}
+.modal-who{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.modal-bag{flex:none;width:54px}
+.modal-who b{display:block;font-size:17px;font-weight:700;color:#1C4C6B}
+.modal-who small{font-size:13px;color:var(--color-subtext)}
+.modal-err{font-size:12.5px;color:var(--color-pink-deep);text-align:center;min-height:1.2em;margin-top:10px;line-height:1.5}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
@@ -782,6 +801,27 @@ ul{list-style:none}
     </button>
   </nav>
 </div>
+
+<!-- ================= 봉투 열기 시트 ================= -->
+<div class="modal" id="openModal">
+  <div class="modal-dim" data-close></div>
+  <div class="modal-sheet">
+    <div class="modal-grip"></div>
+    <div class="modal-who">
+      <div class="modal-bag" id="modalBag"></div>
+      <div>
+        <b id="modalNo">HUMAN No.000</b>
+        <small id="modalNick">인간님</small>
+      </div>
+    </div>
+    <p class="field-help">본인 등록 코드를 입력하면 처방전이 열려요.</p>
+    <input class="input code-input" id="modalCode" placeholder="LULU-0000-0000" autocomplete="off">
+    <div class="modal-err" id="modalErr"></div>
+    <button class="btn btn-primary btn-block" id="btnModalOpen">처방전 열기</button>
+    <button class="btn btn-ghost btn-block" data-close style="margin-top:6px">닫기</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -978,8 +1018,7 @@ document.getElementById('btnCopyCode').addEventListener('click', async ()=>{
 });
 
 /* ============================================================
-   사용설명서 이미지 — 1080 × 1620 PNG를 canvas로 직접 그린다.
-   외부 라이브러리를 쓰지 않으므로 폰트 로딩만 기다리면 결과가 항상 동일하다.
+   사용설명서 데이터 — 화면 표시와 PNG 생성이 함께 참조한다
    ============================================================ */
 const MANUAL = {
   no: 'HUMAN No.000',
@@ -1064,7 +1103,7 @@ function openWaiting(a, code){
   go('my-wait');
 }
 
-/* ---- 코드 조회 ---- */
+/* ---- 상단 코드칸으로 조회 ---- */
 async function lookupCode(){
   const raw = document.getElementById('logCode').value.trim();
   if(!raw){ toast('등록 코드를 입력해 주세요'); return; }
@@ -1122,15 +1161,17 @@ async function loadGallery(){
       list.slice(i, i + 2).forEach(g=>{
         const tone = G_TONES[g.humanNumber % G_TONES.length];
         const no = String(g.humanNumber).padStart(3, '0');
+        const nick = esc(g.nickname || '이름 없음');
         html +=
-          '<button class="pouch" type="button">' +
+          '<button class="pouch" type="button" data-no="' + g.humanNumber +
+            '" data-nick="' + nick + '" data-tone="' + tone + '">' +
             '<div class="bag ' + tone + '">' +
               '<div class="bag-band"></div>' +
               '<div class="bag-clip"><i></i><i></i><i></i></div>' +
               '<div class="bag-window">' + G_BELUGA + '</div>' +
               '<div class="bag-lock">🔒</div>' +
             '</div>' +
-            '<div class="tag"><b>No.' + no + '</b><span>' + esc(g.nickname || '이름 없음') + '</span></div>' +
+            '<div class="tag"><b>No.' + no + '</b><span>' + nick + '</span></div>' +
           '</button>';
       });
       // 한 칸만 남으면 자리를 비워 선반 균형을 맞춘다
@@ -1145,17 +1186,83 @@ async function loadGallery(){
   }
 }
 
-/* 남의 봉투는 열리지 않는다 — 코드 입력칸으로 안내 */
+/* ============================================================
+   봉투 클릭 → 코드 입력 시트
+   눌린 봉투의 인간번호와 입력한 코드의 주인이 일치할 때만 열린다.
+   ============================================================ */
+let modalNo = null;
+const $modal = document.getElementById('openModal');
+
 document.getElementById('galleryShelf').addEventListener('click', e=>{
-  if(!e.target.closest('.pouch')) return;
-  toast('내 등록 코드를 입력하면 열려요');
-  const input = document.getElementById('logCode');
-  input.focus();
-  input.scrollIntoView({ behavior:'smooth', block:'center' });
+  const p = e.target.closest('.pouch');
+  if(!p) return;
+  modalNo = Number(p.dataset.no);
+
+  document.getElementById('modalBag').innerHTML =
+    '<div class="bag ' + p.dataset.tone + '" style="box-shadow:none">' +
+      '<div class="bag-band"></div>' +
+      '<div class="bag-window">' + G_BELUGA + '</div>' +
+    '</div>';
+  document.getElementById('modalNo').textContent = 'HUMAN No.' + String(modalNo).padStart(3,'0');
+  document.getElementById('modalNick').textContent = p.dataset.nick + ' 인간님';
+  document.getElementById('modalCode').value = '';
+  document.getElementById('modalErr').textContent = '';
+
+  $modal.classList.add('is-on');
+  setTimeout(()=> document.getElementById('modalCode').focus(), 100);
+});
+
+function closeModal(){
+  $modal.classList.remove('is-on');
+  modalNo = null;
+}
+$modal.addEventListener('click', e=>{ if(e.target.closest('[data-close]')) closeModal(); });
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && $modal.classList.contains('is-on')) closeModal();
+});
+
+async function openFromModal(){
+  const raw = document.getElementById('modalCode').value.trim();
+  const err = document.getElementById('modalErr');
+  const btn = document.getElementById('btnModalOpen');
+  if(!raw){ err.textContent = '등록 코드를 입력해 주세요'; return; }
+
+  btn.disabled = true; btn.textContent = '확인 중…';
+  err.textContent = '';
+  try{
+    const DB = await whenReady();
+    const result = await DB.lookupByCode(raw);
+
+    if(result.state === 'certified'){
+      if(result.data.humanNumber === modalNo){
+        closeModal();
+        openManual(result.data);
+      }else{
+        err.textContent = '이 봉투의 주인이 아니에요. No.' +
+          String(result.data.humanNumber).padStart(3,'0') + ' 봉투를 눌러 주세요.';
+      }
+      return;
+    }
+    if(result.state === 'pending'){
+      err.textContent = '아직 인증 전인 코드예요.';
+      return;
+    }
+    err.textContent = '해당하는 등록 코드를 찾지 못했어요.';
+  }catch(e){
+    console.error(e);
+    err.textContent = '조회에 실패했어요. 잠시 후 다시 시도해 주세요.';
+  }finally{
+    btn.disabled = false; btn.textContent = '처방전 열기';
+  }
+}
+document.getElementById('btnModalOpen').addEventListener('click', openFromModal);
+document.getElementById('modalCode').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') openFromModal();
 });
 
 /* ============================================================
-   사용설명서 PNG 그리기
+   사용설명서 PNG — 1080 × 1620을 canvas로 직접 그린다.
+   외부 라이브러리를 쓰지 않으므로 폰트 로딩만 기다리면 결과가 항상 동일하다.
    ============================================================ */
 function rr(ctx,x,y,w,h,r){
   ctx.beginPath();
