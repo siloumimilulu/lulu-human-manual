@@ -169,6 +169,15 @@ body.slots-off .slot-label{display:none}
   box-shadow:0 .55rem .9rem rgba(0,0,0,.32);
 }
 
+/* 선반이 비었을 때 — 빈 화면도 다음 행동을 알려준다 */
+.shelf-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.6rem;color:var(--ink-dim);text-align:center;
+}
+.shelf-empty b{font-size:1.05rem;font-weight:700;color:var(--ink-soft)}
+.shelf-empty span{font-size:.85rem;line-height:1.6}
+.shelf-empty svg{width:5.5rem;height:auto;fill:rgba(143,196,232,.18);margin-bottom:.4rem}
+
 /* ---- 약봉투 ---- */
 .pouch{
   display:flex;flex-direction:column;align-items:center;gap:.5rem;
@@ -376,9 +385,14 @@ body.slots-off .slot-label{display:none}
 .rec-time{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--paper-ink)}
 .rec-wave{flex:1;display:flex;align-items:center;gap:.18rem;height:2rem;min-width:0}
 .rec-wave i{flex:1;background:rgba(51,66,76,.22);border-radius:99px;height:12%;transition:height .07s linear}
-.rec-done{margin-top:.6rem;display:none;align-items:center;gap:.7rem}
+.rec-done{margin-top:.6rem;display:none;align-items:center;gap:.7rem;flex-wrap:wrap}
 .rec-done.is-on{display:flex}
-.rec-done audio{flex:1;height:2rem;min-width:0}
+.rec-done audio{flex:1;height:2rem;min-width:8rem}
+.rec-state{
+  width:100%;font-size:.8rem;font-weight:600;color:var(--paper-ink-soft);
+  min-height:1.1em;
+}
+.rec-state.is-warn{color:var(--seal)}
 
 /* 도장 */
 .rx-foot{
@@ -395,6 +409,7 @@ body.slots-off .slot-label{display:none}
   transition:transform .15s ease,border-color .15s ease,color .15s ease;
 }
 .seal-btn:hover{transform:scale(1.06);border-color:var(--seal);color:var(--seal)}
+.seal-btn:disabled{opacity:.45;cursor:default;transform:none}
 .seal-btn svg{width:2rem;height:2rem;fill:currentColor}
 .seal-btn small{position:absolute;bottom:-1.1rem;font-size:.68rem;font-weight:700;white-space:nowrap}
 
@@ -523,7 +538,7 @@ body.slots-off .slot-label{display:none}
     </div>
     <div class="head-right">
       <div class="pill"><span class="dot" id="hDot"></span><span id="hState">약 선반</span></div>
-      <div class="pill">오늘의 관리 <b id="hCount">2 / 4</b></div>
+      <div class="pill">기다리는 인간님 <b id="hCount">—</b></div>
     </div>
   </header>
 
@@ -537,7 +552,7 @@ body.slots-off .slot-label{display:none}
           <div class="cabinet-title">오늘 도착한 인간님들</div>
           <div class="cabinet-note">봉투를 열면 처방을 시작해요</div>
         </div>
-        <div class="shelves" id="shelves"><!-- JS로 생성 --></div>
+        <div class="shelves" id="shelves"><!-- Firestore 구독 결과로 생성 --></div>
       </div>
     </section>
 
@@ -549,13 +564,13 @@ body.slots-off .slot-label{display:none}
         <div class="form-panel">
           <div class="form-head">
             <div class="form-who">
-              <b id="fName">물방울 인간님</b>
-              <span id="fMeta">No.1 · 2026.09.02 등록</span>
+              <b id="fName">인간님</b>
+              <span id="fMeta"></span>
             </div>
             <button class="btn-back" id="btnBack">← 선반으로</button>
           </div>
           <div class="form-scroll">
-            <dl id="qaList"><!-- JS로 생성 --></dl>
+            <dl id="qaList"><!-- 신청서 내용으로 생성 --></dl>
           </div>
         </div>
 
@@ -585,18 +600,7 @@ body.slots-off .slot-label{display:none}
             </div>
             <div class="rx-sec">
               <h4><i style="background:var(--mint)"></i>권장 관리법</h4>
-              <div id="careList">
-                <div class="care-row">
-                  <input class="care-name" placeholder="관리 항목" value="머리 쓰담">
-                  <input class="care-dur" placeholder="시간·횟수" value="3분">
-                  <button class="care-del" title="삭제">×</button>
-                </div>
-                <div class="care-row">
-                  <input class="care-name" placeholder="관리 항목" value="귀마사지">
-                  <input class="care-dur" placeholder="시간·횟수" value="5분">
-                  <button class="care-del" title="삭제">×</button>
-                </div>
-              </div>
+              <div id="careList"></div>
               <button class="care-add" id="btnAddCare">+ 관리 항목 추가</button>
             </div>
 
@@ -614,6 +618,7 @@ body.slots-off .slot-label{display:none}
               <div class="rec-done" id="recDone">
                 <audio controls id="recAudio"></audio>
                 <button class="care-add" id="btnRecSave" style="margin:0">파일 저장</button>
+                <div class="rec-state" id="recState">도장을 찍으면 이 녹음이 함께 저장돼요</div>
               </div>
             </div>
           </div>
@@ -631,7 +636,7 @@ body.slots-off .slot-label{display:none}
 
           <div class="seal-mark" id="sealMark">
             <b>LULU<br>CERTIFIED</b>
-            <span id="sealNo">No.024</span>
+            <span id="sealNo">No.000</span>
           </div>
         </div>
 
@@ -654,64 +659,13 @@ body.slots-off .slot-label{display:none}
 
 <div id="demo">
   <button data-act="shelf">약 선반</button>
-  <button data-act="chart">처방전</button>
   <button data-act="slots">슬롯 가이드 켜기 / 끄기</button>
 </div>
 
-<script>
-/* ============================================================
-   데이터 — 실제 서비스에서는 Firestore applications 컬렉션으로 교체
-   ============================================================ */
-const HUMANS = [
-  { n:1, nick:'물방울', tone:'', sleep:'유튜브 쇼츠를 끝없이 봐요',
-    sounds:['머리 쓰담','속삭임','심음'], hard:'밤 11시 이후',
-    phrase:'아 피곤해', stress:'말 없이 게임만 켜요',
-    want:'아무 생각 없이 잠들게 해주세요', msg:'요즘 잘 자본 적이 없어요' },
-  { n:2, nick:'파도소리', tone:'tone-mint', sleep:'천장을 보면서 내일 걱정을 해요',
-    sounds:['귀마사지','토닥토닥'], hard:'새벽 3시쯤',
-    phrase:'괜찮아요', stress:'무작정 걸어요',
-    want:'괜찮다고 말해주세요', msg:'혼자 참는 게 익숙해졌어요' },
-  { n:3, nick:'구름솜', tone:'tone-pink', sleep:'노래를 계속 바꿔 들어요',
-    sounds:['곁잠','단어반복','속삭임'], hard:'퇴근길',
-    phrase:'배고파', stress:'단 걸 먹어요',
-    want:'옆에서 자는 소리를 듣고 싶어요', msg:'조용한 걸 좋아해요' },
-  { n:4, nick:'밤바다', tone:'tone-lav', sleep:'불 끄고 폰만 봐요',
-    sounds:['귀청소','심음'], hard:'일요일 밤',
-    phrase:'귀찮다', stress:'잠수를 타요',
-    want:'귀 청소 해주세요', msg:'월요일이 무서워요' },
-  { n:5, nick:'해파리', tone:'tone-yellow', sleep:'뒤척이다가 새벽에 깨요',
-    sounds:['머리 쓰담','토닥토닥'], hard:'아침',
-    phrase:'좀만 더', stress:'아무것도 안 해요',
-    want:'깨워주는 관리요', msg:'아침에 일어나기가 제일 힘들어요' },
-  { n:6, nick:'조개껍질', tone:'tone-mint', sleep:'책을 폈다가 그대로 잠들어요',
-    sounds:['속삭임'], hard:'낮 3시',
-    phrase:'졸려', stress:'커피를 마셔요',
-    want:'조용한 속삭임', msg:'커피를 너무 많이 마셔요' },
-  { n:7, nick:'물비늘', tone:'', sleep:'계속 뒤척여요',
-    sounds:['심음','곁잠'], hard:'밤 12시',
-    phrase:'다음에', stress:'미뤄요',
-    want:'심장소리 들려주세요', msg:'혼자 있는 밤이 길어요' },
-  { n:8, nick:'모래알', tone:'tone-pink', sleep:'아무 생각 없이 누워 있어요',
-    sounds:['머리 쓰담','귀마사지','칭찬'], hard:'저녁 8시',
-    phrase:'수고했어', stress:'혼잣말을 해요',
-    want:'많이 칭찬해주세요', msg:'칭찬에 정말 약해요' },
-  { n:9, nick:'물안개', tone:'tone-lav', sleep:'플레이리스트를 계속 넘겨요',
-    sounds:['속삭임','토닥토닥'], hard:'새벽 2시',
-    phrase:'몰라', stress:'방 정리를 해요',
-    want:'재워주는 관리요', msg:'생각이 멈추질 않아요' },
-  { n:10, nick:'윤슬', tone:'tone-yellow', sleep:'따뜻한 물로 샤워해요',
-    sounds:['심음','곁잠'], hard:'수요일 저녁',
-    phrase:'힘내자', stress:'노래를 크게 틀어요',
-    want:'심장소리 오래 들려주세요', msg:'주중이 제일 버거워요' },
-  { n:11, nick:'거품이', tone:'', sleep:'괜히 냉장고를 열어봐요',
-    sounds:['귀청소','단어반복'], hard:'밤 10시',
-    phrase:'배고파 또', stress:'야식을 시켜요',
-    want:'귀 청소랑 단어반복이요', msg:'밤마다 허전해요' },
-  { n:12, nick:'미역', tone:'tone-mint', sleep:'눈 감고 하루를 되감아요',
-    sounds:['머리 쓰담','속삭임'], hard:'출근길',
-    phrase:'가기 싫다', stress:'이불 속에 숨어요',
-    want:'출근 전에 힘내라고 해주세요', msg:'아침이 제일 무거워요' }
-];
+<!-- firebase.js가 window.LuluDB를 채운 뒤에 실행되어야 하므로 이 스크립트도 모듈이다.
+     모듈은 문서에 적힌 순서대로 실행된다. -->
+<script type="module">
+const DB = window.LuluDB;
 
 /* 약봉투 색 → 장면 전환 원 색 */
 const IRIS_TONE = {
@@ -721,42 +675,122 @@ const IRIS_TONE = {
   'tone-lav'    : ['#D2C6EF','#A796D2','#8375B0'],
   'tone-yellow' : ['#F0DFA4','#CBB273','#A69058']
 };
+const TONES = ['', 'tone-mint', 'tone-pink', 'tone-lav', 'tone-yellow'];
 
 const BELUGA = '<svg viewBox="0 0 100 60"><path d="M6 31c0-11 12-20 30-20 12 0 20 4 25 8l14-9-3 15 3 15-14-9c-5 4-13 8-25 8C18 39 6 42 6 31z"/><circle cx="27" cy="26" r="4.2" fill="#5E86A0"/></svg>';
 
+const $ = id => document.getElementById(id);
+const shelves = $('shelves');
+
+/* 지금 선반에 올라와 있는 신청서들 · 지금 열어놓은 인간님 */
+let apps = [];
+let current = null;
+let sealed = false;
+let unsubShelf = null;
+
 /* ============================================================
-   SCENE 1 — 선반 생성
+   로그인 게이트 — 여기를 통과해야 선반 구독이 시작된다
    ============================================================ */
-const shelves = document.getElementById('shelves');
-const PER_ROW = 4;
-for(let s = 0; s < Math.ceil(HUMANS.length / PER_ROW); s++){
-  const shelf = document.createElement('div');
-  shelf.className = 'shelf';
-  const row = document.createElement('div');
-  row.className = 'shelf-row';
-  HUMANS.slice(s*PER_ROW, s*PER_ROW + PER_ROW).forEach(h=>{
-    const b = document.createElement('button');
-    b.className = 'pouch';
-    b.dataset.n = h.n;
-    b.innerHTML =
-      '<div class="bag ' + h.tone + '">' +
-        '<div class="bag-band"></div>' +
-        '<div class="bag-clip"><i></i><i></i><i></i></div>' +
-        '<div class="bag-window">' + BELUGA + '</div>' +
-      '</div>' +
-      '<div class="tag"><b>No.' + h.n + '</b><span>' + h.nick + '</span></div>';
-    row.appendChild(b);
+$('btnLogin').addEventListener('click', doLogin);
+$('loginPw').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+
+async function doLogin(){
+  const btn = $('btnLogin');
+  const err = $('loginErr');
+  const email = $('loginEmail').value.trim();
+  const pw = $('loginPw').value;
+
+  if(!email || !pw){ err.textContent = '이메일과 비밀번호를 모두 입력해 주세요.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '확인 중…';
+  err.textContent = '';
+
+  try{
+    await DB.signInAsLulu(email, pw);
+    $('loginGate').classList.add('is-hidden');
+    startShelf();
+  }catch(e){
+    console.error(e);
+    err.textContent =
+      e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' ? '이메일이나 비밀번호가 맞지 않아요.' :
+      e.code === 'auth/user-not-found'    ? '등록되지 않은 계정이에요. Firebase 콘솔에서 계정을 먼저 만들어 주세요.' :
+      e.code === 'auth/too-many-requests' ? '시도가 너무 많았어요. 잠시 후 다시 해주세요.' :
+      e.code === 'auth/network-request-failed' ? '네트워크 연결을 확인해 주세요.' :
+      '로그인에 실패했어요. 콘솔 오류를 확인해 주세요.';
+    btn.disabled = false;
+    btn.textContent = '로그인';
+  }
+}
+
+/* ============================================================
+   SCENE 1 — 선반 (Firestore 실시간 구독)
+   ============================================================ */
+function startShelf(){
+  if(unsubShelf) unsubShelf();
+  unsubShelf = DB.subscribeShelf(list => {
+    apps = list;
+    renderShelf();
+    $('hCount').textContent = list.length + '명';
+
+    /* 열어둔 인간님이 다른 곳에서 인증되어 사라지면 선반으로 돌려보낸다 */
+    if(current && !sealed && !list.some(a => a.id === current.id)){
+      showScene('sc-shelf');
+      setState('약 선반');
+    }
   });
-  const board = document.createElement('div');
-  board.className = 'shelf-board';
-  shelf.append(row, board);
-  shelves.appendChild(shelf);
+}
+
+function renderShelf(){
+  shelves.innerHTML = '';
+
+  if(!apps.length){
+    shelves.innerHTML =
+      '<div class="shelf-empty">' + BELUGA +
+      '<b>선반이 비었어요</b>' +
+      '<span>벨루미가 신청서를 넣으면<br>여기에 바로 올라옵니다</span></div>';
+    return;
+  }
+
+  const PER_ROW = 4;
+  for(let s = 0; s < Math.ceil(apps.length / PER_ROW); s++){
+    const shelf = document.createElement('div');
+    shelf.className = 'shelf';
+    const row = document.createElement('div');
+    row.className = 'shelf-row';
+
+    apps.slice(s*PER_ROW, s*PER_ROW + PER_ROW).forEach((a, i)=>{
+      const idx = s*PER_ROW + i;
+      const b = document.createElement('button');
+      b.className = 'pouch';
+      b.dataset.id = a.id;
+      b.dataset.tone = TONES[idx % TONES.length];
+      b.innerHTML =
+        '<div class="bag ' + b.dataset.tone + '">' +
+          '<div class="bag-band"></div>' +
+          '<div class="bag-clip"><i></i><i></i><i></i></div>' +
+          '<div class="bag-window">' + BELUGA + '</div>' +
+        '</div>' +
+        '<div class="tag"><b>#' + (idx + 1) + '</b><span>' + esc(a.nickname || '이름 없음') + '</span></div>';
+      row.appendChild(b);
+    });
+
+    const board = document.createElement('div');
+    board.className = 'shelf-board';
+    shelf.append(row, board);
+    shelves.appendChild(shelf);
+  }
+}
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 /* ============================================================
    아이리스 전환 — 클릭한 지점에서 원이 퍼져 화면을 덮고 다음 장면으로
    ============================================================ */
-const iris = document.getElementById('iris');
+const iris = $('iris');
 function irisTo(x, y, onCover, tone){
   const c = IRIS_TONE[tone || ''] || IRIS_TONE[''];
   iris.style.setProperty('--iris-1', c[0]);
@@ -783,59 +817,78 @@ function showScene(id){
   document.querySelectorAll('.scene').forEach(s => s.classList.toggle('is-active', s.id === id));
 }
 function setState(txt, rec){
-  document.getElementById('hState').textContent = txt;
-  document.getElementById('hDot').classList.toggle('is-rec', !!rec);
+  $('hState').textContent = txt;
+  $('hDot').classList.toggle('is-rec', !!rec);
 }
 
 /* ---- 봉투 클릭 → 처방전으로 ---- */
-let currentHuman = HUMANS[0];
-
 shelves.addEventListener('click', e=>{
   const p = e.target.closest('.pouch');
   if(!p) return;
-  const h = HUMANS.find(v => v.n === Number(p.dataset.n));
+  const a = apps.find(v => v.id === p.dataset.id);
+  if(!a) return;
   const rect = p.getBoundingClientRect();
   irisTo(rect.left + rect.width/2, rect.top + rect.height/2, ()=>{
-    fillChart(h);
+    openChart(a, p.dataset.tone);
     showScene('sc-chart');
     setState('처방 작성 중');
-  }, h.tone);
+  }, p.dataset.tone);
 });
 
 /* ---- 뒤로 ---- */
-document.getElementById('btnBack').addEventListener('click', e=>{
+$('btnBack').addEventListener('click', e=>{
   const rect = e.currentTarget.getBoundingClientRect();
   irisTo(rect.left + rect.width/2, rect.top + rect.height/2, ()=>{
     showScene('sc-shelf');
     setState('약 선반');
     resetRx();
-  }, currentHuman.tone);
+  }, current ? current._tone : '');
 });
 
 /* ============================================================
-   SCENE 2 — 폼 내용 채우기
+   SCENE 2 — 신청서 내용 채우기
    ============================================================ */
-function fillChart(h){
-  currentHuman = h;
-  document.getElementById('fName').textContent = h.nick + ' 인간님';
-  document.getElementById('fMeta').textContent = 'No.' + h.n + ' · 2026.09.02 등록';
-  document.getElementById('qaList').innerHTML =
-    qaRow('잠이 안 올 때 하는 행동', h.sleep) +
-    '<div class="qa"><dt>좋아하는 소리</dt><dd class="chips">' +
-      h.sounds.map(s => '<i>' + s + '</i>').join('') + '</dd></div>' +
-    qaRow('요즘 가장 힘든 시간대', h.hard, true) +
-    qaRow('최근 자주 하는 말', '“' + h.phrase + '”') +
-    qaRow('스트레스 받을 때 하는 행동', h.stress) +
-    qaRow('받고 싶은 관리', h.want) +
-    qaRow('루루가 알아줬으면 하는 한 가지', h.msg, true);
+function openChart(a, tone){
+  current = Object.assign({}, a, { _tone: tone || '' });
+  sealed = false;
+  resetRx();
+
+  $('fName').textContent = (a.nickname || '이름 없는') + ' 인간님';
+  $('fMeta').textContent = a.regCode + ' · ' + fmtDate(a.createdAt) + ' 등록';
+
+  $('qaList').innerHTML =
+    row('잠이 안 올 때 하는 행동', a.sleepBehavior) +
+    chipRow('좋아하는 소리', a.favoriteSounds) +
+    chipRow('요즘 가장 힘든 시간대', a.difficultTime, true) +
+    row('듣기 힘든 소리', a.dislikedSounds) +
+    row('최근 자주 하는 말', a.recentPhrase ? '“' + a.recentPhrase + '”' : '') +
+    row('스트레스 받을 때 하는 행동', a.stressBehavior) +
+    row('가장 좋아하는 칭찬', a.favoritePraise) +
+    row('받고 싶은 관리', a.requestedCare) +
+    row('루루가 알아줬으면 하는 한 가지', a.messageToLulu, true);
 }
-function qaRow(q, a, key){
-  return '<div class="qa' + (key ? ' is-key' : '') + '"><dt>' + q + '</dt><dd>' + a + '</dd></div>';
+
+function row(q, a, key){
+  if(!a) return '';
+  return '<div class="qa' + (key ? ' is-key' : '') + '"><dt>' + q + '</dt><dd>' + esc(a) + '</dd></div>';
+}
+function chipRow(q, arr, key){
+  const list = Array.isArray(arr) ? arr : (arr ? [arr] : []);
+  if(!list.length) return '';
+  return '<div class="qa' + (key ? ' is-key' : '') + '"><dt>' + q + '</dt><dd class="chips">' +
+    list.map(s => '<i>' + esc(s) + '</i>').join('') + '</dd></div>';
+}
+function fmtDate(ts){
+  if(!ts) return '방금';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.getFullYear() + '.' +
+    String(d.getMonth()+1).padStart(2,'0') + '.' +
+    String(d.getDate()).padStart(2,'0');
 }
 
 /* ---- 말머리 행 (특징 · 취급주의) ---- */
 function addLine(listId, ph, value){
-  const list = document.getElementById(listId);
+  const list = $(listId);
   const d = document.createElement('div');
   d.className = 'line-row';
   d.innerHTML = '<span class="bullet"></span>' +
@@ -849,7 +902,6 @@ function addLine(listId, ph, value){
 document.querySelectorAll('[data-add]').forEach(btn=>{
   btn.addEventListener('click', ()=> addLine(btn.dataset.add, btn.dataset.ph).focus());
 });
-// 엔터로 다음 말머리 이어 쓰기, 빈 줄에서 백스페이스로 삭제
 document.querySelectorAll('.line-list').forEach(list=>{
   list.addEventListener('click', e=>{
     if(e.target.closest('.care-del')) e.target.closest('.line-row').remove();
@@ -867,17 +919,22 @@ document.querySelectorAll('.line-list').forEach(list=>{
   });
 });
 
-/* ---- 관리 항목 추가·삭제 ---- */
-document.getElementById('btnAddCare').addEventListener('click', ()=>{
+/* ---- 관리 항목 ---- */
+function addCare(name, dur){
   const d = document.createElement('div');
   d.className = 'care-row';
   d.innerHTML = '<input class="care-name" placeholder="관리 항목">' +
                 '<input class="care-dur" placeholder="시간·횟수">' +
                 '<button class="care-del" title="삭제">×</button>';
-  document.getElementById('careList').appendChild(d);
-  d.querySelector('input').focus();
+  $('careList').appendChild(d);
+  if(name) d.querySelector('.care-name').value = name;
+  if(dur)  d.querySelector('.care-dur').value = dur;
+  return d;
+}
+$('btnAddCare').addEventListener('click', ()=>{
+  addCare().querySelector('input').focus();
 });
-document.getElementById('careList').addEventListener('click', e=>{
+$('careList').addEventListener('click', e=>{
   if(e.target.closest('.care-del')) e.target.closest('.care-row').remove();
 });
 
@@ -887,8 +944,9 @@ document.getElementById('careList').addEventListener('click', e=>{
    스테레오(바이노럴) 2채널로 받는다.
    ============================================================ */
 let mediaRec, chunks = [], recTimer, recStart, audioCtx, analyser, rafId, recStream;
+let lastBlob = null, lastUrl = null;
 
-const waveEl = document.getElementById('recWave');
+const waveEl = $('recWave');
 for(let i = 0; i < 28; i++) waveEl.appendChild(document.createElement('i'));
 const waveBars = waveEl.querySelectorAll('i');
 
@@ -897,10 +955,10 @@ async function listDevices(){
     const devs = await navigator.mediaDevices.enumerateDevices();
     const mics = devs.filter(d => d.kind === 'audioinput' && d.label);
     if(!mics.length) return;
-    const sel = document.getElementById('recDev');
+    const sel = $('recDev');
     const cur = sel.value;
     sel.innerHTML = '<option value="">기본 입력 장치</option>' +
-      mics.map(m => '<option value="' + m.deviceId + '">' + m.label + '</option>').join('');
+      mics.map(m => '<option value="' + m.deviceId + '">' + esc(m.label) + '</option>').join('');
     if(cur) sel.value = cur;
   }catch(err){ console.warn(err); }
 }
@@ -909,9 +967,7 @@ listDevices();
 /* 장치가 요청한 조건을 못 맞추면 OverconstrainedError가 난다.
    ASMR에 중요한 순서대로 하나씩 내려놓으며 다시 시도한다. */
 async function openMic(deviceId){
-  const base = {
-    echoCancellation:false, noiseSuppression:false, autoGainControl:false
-  };
+  const base = { echoCancellation:false, noiseSuppression:false, autoGainControl:false };
   const attempts = [
     Object.assign({}, base, deviceId ? {deviceId:{exact:deviceId}} : {}, {channelCount:2, sampleRate:48000}),
     Object.assign({}, base, deviceId ? {deviceId:{exact:deviceId}} : {}, {channelCount:2}),
@@ -925,19 +981,18 @@ async function openMic(deviceId){
     try{ return await navigator.mediaDevices.getUserMedia({ audio }); }
     catch(err){
       last = err;
-      // 권한 거부는 조건을 낮춰도 소용없으니 즉시 중단
       if(err.name === 'NotAllowedError' || err.name === 'SecurityError') throw err;
     }
   }
   throw last;
 }
 
-document.getElementById('btnRec').addEventListener('click', async ()=>{
+$('btnRec').addEventListener('click', async ()=>{
   if(mediaRec && mediaRec.state === 'recording'){ stopRec(); return; }
-  const btn = document.getElementById('btnRec');
+  const btn = $('btnRec');
 
   try{
-    const deviceId = document.getElementById('recDev').value || null;
+    const deviceId = $('recDev').value || null;
     recStream = await openMic(deviceId);
     await listDevices();
 
@@ -951,16 +1006,14 @@ document.getElementById('btnRec').addEventListener('click', async ()=>{
     mediaRec = new MediaRecorder(recStream, { mimeType: pickMime(), audioBitsPerSecond: 256000 });
     mediaRec.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
     mediaRec.onstop = ()=>{
-      const blob = new Blob(chunks, { type: mediaRec.mimeType || 'audio/webm' });
-      const url = URL.createObjectURL(blob);
-      document.getElementById('recAudio').src = url;
-      document.getElementById('recDone').classList.add('is-on');
-      document.getElementById('btnRecSave').onclick = ()=>{
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'LULU_ASMR_' + document.getElementById('fName').textContent.replace(/\s/g, '') + '.webm';
-        a.click();
-      };
+      lastBlob = new Blob(chunks, { type: mediaRec.mimeType || 'audio/webm' });
+      if(lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl = URL.createObjectURL(lastBlob);
+      $('recAudio').src = lastUrl;
+      $('recDone').classList.add('is-on');
+      setRecState(sealed
+        ? '도장이 이미 찍혔어요. 아래 파일 저장으로 받은 뒤 다시 올려주세요.'
+        : '도장을 찍으면 이 녹음이 함께 저장돼요');
       recStream.getTracks().forEach(t => t.stop());
     };
     mediaRec.start(1000);
@@ -979,16 +1032,27 @@ document.getElementById('btnRec').addEventListener('click', async ()=>{
     setState('녹음 중', true);
   }catch(err){
     console.error(err);
-    const msg =
+    alert(
       err.name === 'NotAllowedError'      ? '마이크 권한이 거부됐어요. 주소창의 자물쇠 아이콘에서 허용해 주세요.' :
       err.name === 'NotFoundError'        ? '사용할 수 있는 입력 장치를 찾지 못했어요.' :
       err.name === 'NotReadableError'     ? '다른 프로그램이 마이크를 쓰고 있어요. DAW나 OBS에서 장치를 놓아주세요.' :
       err.name === 'OverconstrainedError' ? '이 장치가 요청한 녹음 조건을 지원하지 않아요. 다른 입력 장치를 골라 주세요.' :
-      '마이크를 열 수 없어요. 권한과 입력 장치를 확인해 주세요.';
-    alert(msg);
+      '마이크를 열 수 없어요. 권한과 입력 장치를 확인해 주세요.'
+    );
   }
 });
 
+$('btnRecSave').addEventListener('click', ()=>{
+  if(!lastBlob) return;
+  const a = document.createElement('a');
+  a.href = lastUrl;
+  a.download = 'LULU_ASMR_' + (current ? current.regCode : 'RECORD') + '.' + extOf(lastBlob);
+  a.click();
+});
+
+function extOf(blob){
+  return (blob.type || '').includes('ogg') ? 'ogg' : 'webm';
+}
 function pickMime(){
   const list = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
   return list.find(m => MediaRecorder.isTypeSupported(m)) || '';
@@ -999,14 +1063,14 @@ function stopRec(){
   cancelAnimationFrame(rafId);
   if(audioCtx && audioCtx.state !== 'closed') audioCtx.close();
   waveBars.forEach(b => b.style.height = '12%');
-  const btn = document.getElementById('btnRec');
+  const btn = $('btnRec');
   btn.classList.remove('is-rec');
   btn.innerHTML = '<i></i>녹음 시작';
-  setState('처방 작성 중');
+  setState(sealed ? '인증 완료' : '처방 작성 중');
 }
 function tick(){
   const s = Math.floor((Date.now() - recStart) / 1000);
-  document.getElementById('recTime').textContent =
+  $('recTime').textContent =
     String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 }
 function drawWave(){
@@ -1018,39 +1082,114 @@ function drawWave(){
   });
   rafId = requestAnimationFrame(drawWave);
 }
+function setRecState(msg, warn){
+  const el = $('recState');
+  el.textContent = msg || '';
+  el.classList.toggle('is-warn', !!warn);
+}
 
 /* ============================================================
-   도장 — 클릭해서 직접 찍는다
-   찍히는 번호는 지금 열려 있는 인간님의 HUMAN 번호를 그대로 쓴다.
+   도장 — 클릭하면 HUMAN 번호를 트랜잭션으로 발급받는다
+   번호는 counters/humanNumber에서만 나온다. 화면에서 만들지 않는다.
    ============================================================ */
-document.getElementById('btnSeal').addEventListener('click', ()=>{
-  const mark = document.getElementById('sealMark');
-  if(mark.classList.contains('is-on')) return;
+$('btnSeal').addEventListener('click', async ()=>{
+  if(sealed || !current) return;
 
-  const no = String(currentHuman.n).padStart(3, '0');
-  document.getElementById('sealNo').textContent = 'No.' + no;
-  mark.classList.add('is-on');
+  const manual = collectManual();
+  if(!manual.features.length && !manual.cautions.length){
+    alert('특징이나 취급주의를 한 줄 이상 적어 주세요.');
+    return;
+  }
 
-  const paper = document.getElementById('rxPaper');
+  const btn = $('btnSeal');
+  btn.disabled = true;
+  setState('번호 발급 중');
+
+  let humanNumber;
+  try{
+    humanNumber = await DB.certify(current.regCode, manual);
+  }catch(err){
+    console.error(err);
+    btn.disabled = false;
+    setState('처방 작성 중');
+    alert(
+      err.code === 'permission-denied'
+        ? '권한이 없어요. 루루 계정으로 로그인되어 있는지 확인해 주세요.'
+        : '번호 발급에 실패했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'
+    );
+    return;
+  }
+
+  sealed = true;
+  const no = String(humanNumber).padStart(3, '0');
+
+  $('sealNo').textContent = 'No.' + no;
+  $('sealMark').classList.add('is-on');
+
+  const paper = $('rxPaper');
   paper.classList.add('is-shake');
   setTimeout(()=> paper.classList.remove('is-shake'), 320);
 
   setTimeout(()=>{
-    const rxNo = document.getElementById('rxNo');
+    const rxNo = $('rxNo');
     rxNo.textContent = no;
     rxNo.classList.remove('is-empty');
     setState('인증 완료');
   }, 340);
+
+  /* 녹음이 있으면 이어서 업로드한다. 실패해도 인증 자체는 이미 끝났다. */
+  if(lastBlob){
+    setRecState('녹음 파일을 올리는 중…');
+    try{
+      await DB.uploadAudio(current.regCode, lastBlob, extOf(lastBlob));
+      setRecState('녹음까지 저장했어요');
+    }catch(err){
+      console.error(err);
+      setRecState('녹음 업로드에 실패했어요. 파일 저장으로 받아두세요.', true);
+    }
+  }else{
+    setRecState('녹음 없이 인증했어요');
+  }
 });
 
+function collectManual(){
+  const lines = id => Array.from(document.querySelectorAll('#' + id + ' input'))
+    .map(i => i.value.trim()).filter(Boolean);
+
+  const cares = Array.from($('careList').querySelectorAll('.care-row'))
+    .map(r => ({
+      name: r.querySelector('.care-name').value.trim(),
+      duration: r.querySelector('.care-dur').value.trim()
+    }))
+    .filter(c => c.name);
+
+  return {
+    nickname: (current && current.nickname) || '',
+    features: lines('listFeature'),
+    cautions: lines('listCaution'),
+    cares
+  };
+}
+
 function resetRx(){
-  document.getElementById('sealMark').classList.remove('is-on');
-  const rxNo = document.getElementById('rxNo');
+  sealed = false;
+  $('btnSeal').disabled = false;
+  $('sealMark').classList.remove('is-on');
+  const rxNo = $('rxNo');
   rxNo.textContent = '— — —';
   rxNo.classList.add('is-empty');
+
   resetLines();
-  document.getElementById('recDone').classList.remove('is-on');
-  document.getElementById('recTime').textContent = '00:00';
+  $('careList').innerHTML = '';
+  addCare();
+  addCare();
+
+  lastBlob = null;
+  if(lastUrl){ URL.revokeObjectURL(lastUrl); lastUrl = null; }
+  $('recAudio').removeAttribute('src');
+  $('recDone').classList.remove('is-on');
+  $('recTime').textContent = '00:00';
+  setRecState('도장을 찍으면 이 녹음이 함께 저장돼요');
 }
 
 /* 말머리 입력란을 빈 두 줄로 되돌린다 */
@@ -1062,19 +1201,18 @@ function resetLines(){
     addLine(list.id, ph);
   });
 }
-resetLines();
+resetRx();
 
 /* ============================================================
    데모 컨트롤 — OBS Browser Source에는 ?demo=1 을 붙이지 않는다
    ============================================================ */
 if(new URLSearchParams(location.search).get('demo') === '1'){
-  const dock = document.getElementById('demo');
+  const dock = $('demo');
   dock.classList.add('is-on');
   dock.addEventListener('click', e=>{
     const b = e.target.closest('button');
     if(!b) return;
     if(b.dataset.act === 'shelf'){ showScene('sc-shelf'); setState('약 선반'); }
-    if(b.dataset.act === 'chart'){ fillChart(HUMANS[0]); showScene('sc-chart'); setState('처방 작성 중'); }
     if(b.dataset.act === 'slots'){ document.body.classList.toggle('slots-off'); }
   });
 }
