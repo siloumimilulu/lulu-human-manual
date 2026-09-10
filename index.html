@@ -413,6 +413,8 @@ ul{list-style:none}
 .media-thumb svg{width:22px;height:22px;fill:#5B449B}
 .media-t{font-size:15px;font-weight:600}
 .media-d{font-size:12.5px;color:var(--color-subtext);margin-top:3px}
+.media-audio{width:100%;margin-top:16px;display:none}
+.media-audio.is-on{display:block}
 .media-btns{display:flex;gap:9px;margin-top:16px}
 .media-btns .btn{flex:1;min-height:44px;font-size:14px}
 
@@ -433,6 +435,10 @@ ul{list-style:none}
   text-align:center;font-size:20px;font-weight:700;letter-spacing:.12em;
   text-transform:uppercase;padding:16px;
 }
+
+/* 공개 선반 헤더 */
+.shelf-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.shelf-head h3{margin:0}
 
 .empty{text-align:center;padding:56px 20px}
 .empty-mark{
@@ -661,26 +667,26 @@ ul{list-style:none}
     <div class="status-hero">
       <span class="badge badge-waiting">WAITING</span>
       <h2>아직 루루의 분석을 기다리고 있어요</h2>
-      <p>물방울 인간님의 데이터는 안전하게 보관 중이에요.<br>선정되면 이 화면에서 바로 알려드릴게요.</p>
+      <p id="waitNick">데이터는 안전하게 보관 중이에요.<br>선정되면 이 화면에서 바로 알려드릴게요.</p>
     </div>
 
     <div class="card" style="margin-top:14px">
       <h3 class="h-sec">등록 정보</h3>
       <div style="display:flex;justify-content:space-between;padding:7px 0">
-        <span class="t-small">닉네임</span><strong style="font-size:14px">물방울</strong>
+        <span class="t-small">닉네임</span><strong style="font-size:14px" id="waitName">—</strong>
       </div>
       <div class="divider" style="margin:6px 0"></div>
       <div style="display:flex;justify-content:space-between;padding:7px 0">
-        <span class="t-small">등록일</span><strong style="font-size:14px">2026.08.29</strong>
+        <span class="t-small">등록일</span><strong style="font-size:14px" id="waitDate">—</strong>
       </div>
       <div class="divider" style="margin:6px 0"></div>
       <div style="display:flex;justify-content:space-between;padding:7px 0;align-items:center">
-        <span class="t-small">검수 상태</span><span class="badge badge-approved">APPROVED</span>
+        <span class="t-small">등록 코드</span><strong style="font-size:14px" id="waitCode">—</strong>
       </div>
     </div>
 
     <div class="notice" style="margin-top:14px">
-      승인된 인간님만 방송 선정 대상이 돼요. 선정은 랜덤으로 진행돼요.
+      선정은 방송 중에 진행돼요. 선정되면 이 화면이 사용설명서로 바뀝니다.
     </div>
   </section>
 
@@ -693,43 +699,32 @@ ul{list-style:none}
 
     <div class="manual">
       <div class="manual-head">
-        <div class="manual-no" id="mNo">HUMAN No.024</div>
-        <div class="manual-nick" id="mNick">물방울 인간님</div>
+        <div class="manual-no" id="mNo">HUMAN No.000</div>
+        <div class="manual-nick" id="mNick">인간님</div>
       </div>
       <div class="manual-body">
         <div class="manual-sec">
           <h4><i class="dot dot-blue"></i>특징</h4>
-          <ul id="mFeatures">
-            <li>생각이 많음</li>
-            <li>자기 전에 휴대폰을 오래 봄</li>
-            <li>칭찬에 약함</li>
-          </ul>
+          <ul id="mFeatures"></ul>
         </div>
         <div class="manual-sec">
           <h4><i class="dot dot-pink"></i>취급주의</h4>
-          <ul id="mCautions">
-            <li>밤 11시 이후 혼자 오래 두지 말 것</li>
-            <li>생각할 시간을 너무 많이 주지 말 것</li>
-          </ul>
+          <ul id="mCautions"></ul>
         </div>
         <div class="manual-sec">
           <h4><i class="dot dot-mint"></i>권장 관리법</h4>
-          <ul id="mCares">
-            <li class="care-li"><span>머리 쓰담</span><em>3분</em></li>
-            <li class="care-li"><span>귀마사지</span><em>5분</em></li>
-            <li class="care-li"><span>“잘했어요”</span><em>3회</em></li>
-          </ul>
+          <ul id="mCares"></ul>
         </div>
       </div>
       <div class="manual-foot">
         <div>
           <small>관리 담당</small>
           <strong>시로우미 미루루</strong>
-          <small style="margin-top:6px">관리 상태 · STABLE</small>
+          <small style="margin-top:6px">관리 상태 · <span id="mStatus">STABLE</span></small>
         </div>
         <div class="stamp" id="stamp">
           <b>LULU<br>CERTIFIED</b>
-          <i id="mStampNo">No.024</i>
+          <i id="mStampNo">No.000</i>
         </div>
       </div>
     </div>
@@ -740,29 +735,13 @@ ul{list-style:none}
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </div>
         <div>
-          <div class="media-t">루루의 맞춤 관리 영상</div>
-          <div class="media-d">08:34 · 방송에서 녹음한 개인 ASMR</div>
+          <div class="media-t">루루의 맞춤 관리 음성</div>
+          <div class="media-d" id="mMediaDesc">방송에서 녹음한 개인 ASMR</div>
         </div>
       </div>
+      <audio class="media-audio" id="mAudio" controls preload="metadata"></audio>
       <div class="media-btns">
-        <button class="btn btn-secondary">재생하기</button>
-        <button class="btn btn-primary" id="btnSaveImg">사용설명서 다운로드</button>
-      </div>
-    </div>
-
-    <div style="margin-top:26px">
-      <h2 class="h-sec">관리 기록</h2>
-      <div class="card">
-        <div class="hist">
-          <div class="hist-item is-first">
-            <div class="hist-t">첫 인간 사용설명서</div>
-            <div class="hist-d">EP.002 · 2026.09.06</div>
-          </div>
-          <div class="hist-item">
-            <div class="hist-t">다음 관리 예정</div>
-            <div class="hist-d">아직 잡히지 않았어요</div>
-          </div>
-        </div>
+        <button class="btn btn-primary btn-block" id="btnSaveImg">사용설명서 다운로드</button>
       </div>
     </div>
   </section>
@@ -781,11 +760,12 @@ ul{list-style:none}
       <button class="btn btn-primary btn-block" id="btnOpenCode" style="margin-top:12px">처방전 열기</button>
     </div>
 
-    <div style="margin-top:26px" class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <span class="t-small">지금까지 인증된 인간님</span>
-        <b id="certifiedCount" style="font-size:20px;color:var(--color-blue-deep)">—</b>
+    <div style="margin-top:26px">
+      <div class="shelf-head">
+        <h3 class="h-sec">인증된 인간님들</h3>
+        <span class="t-small" id="certifiedCount">—</span>
       </div>
+      <div id="galleryShelf"></div>
     </div>
   </section>
 
@@ -805,6 +785,21 @@ ul{list-style:none}
 <div class="toast" id="toast"></div>
 
 <script>
+/* ============================================================
+   firebase.js는 type="module"이라 이 스크립트보다 늦게 실행된다.
+   그래서 window.LuluDB가 준비될 때까지 기다렸다 쓴다.
+   ============================================================ */
+async function whenReady(){
+  while(!window.LuluDB) await new Promise(r => setTimeout(r, 30));
+  await window.LuluDB.ready;
+  return window.LuluDB;
+}
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 /* ---------- 화면 전환 ---------- */
 const views = {
   home:'v-home', apply:'v-apply', done:'v-done',
@@ -818,22 +813,29 @@ function go(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('is-active', v.id===id));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('is-on', t.dataset.go===tabOf[name]));
   window.scrollTo(0,0);
+
+  // 다른 화면으로 나가면 재생 중이던 ASMR은 멈춘다
+  const au = document.getElementById('mAudio');
+  if(name !== 'my-cert' && !au.paused) au.pause();
+
   if(name==='my-cert') replayStamp();
-  if(name==='log') loadCertifiedCount();
+  if(name==='log'){ loadCertifiedCount(); loadGallery(); }
 }
 
 let countLoaded = false;
 async function loadCertifiedCount(){
   if(countLoaded) return; // 탭 옮길 때마다 다시 불러올 필요는 없다
   try{
-    const n = await window.LuluDB.getCertifiedCount();
-    document.getElementById('certifiedCount').textContent = n + '명';
+    const DB = await whenReady();
+    const n = await DB.getCertifiedCount();
+    document.getElementById('certifiedCount').textContent = n + '명 인증';
     const homeEl = document.getElementById('homeCertifiedCount');
     if(homeEl) homeEl.textContent = n;
     countLoaded = true;
   }catch(err){ console.error(err); }
 }
 loadCertifiedCount(); // 홈이 첫 화면이니 시작하자마자 한 번 불러온다
+
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-go]');
   if(el) go(el.dataset.go);
@@ -917,7 +919,8 @@ async function submitApplicationToFirebase(){
   $next.disabled = true;
   $next.textContent = '등록하는 중…';
   try{
-    const code = await window.LuluDB.submitApplication(payload);
+    const DB = await whenReady();
+    const code = await DB.submitApplication(payload);
     document.getElementById('regCode').textContent = code;
     go('done');
     step = 1; renderStep();
@@ -977,17 +980,17 @@ document.getElementById('btnCopyCode').addEventListener('click', async ()=>{
 /* ============================================================
    사용설명서 이미지 — 1080 × 1620 PNG를 canvas로 직접 그린다.
    외부 라이브러리를 쓰지 않으므로 폰트 로딩만 기다리면 결과가 항상 동일하다.
-   실제 서비스에서는 아래 MANUAL 객체를 Firestore 문서로 교체하면 된다.
    ============================================================ */
 const MANUAL = {
-  no: 'HUMAN No.024',
-  nick: '물방울 인간님',
-  features: ['생각이 많음','자기 전에 휴대폰을 오래 봄','칭찬에 약함'],
-  cautions: ['밤 11시 이후 혼자 오래 두지 말 것','생각할 시간을 너무 많이 주지 말 것'],
-  cares: [['머리 쓰담','3분'],['귀마사지','5분'],['“잘했어요”','3회']],
+  no: 'HUMAN No.000',
+  nick: '인간님',
+  features: [],
+  cautions: [],
+  cares: [],
   status: 'STABLE',
   by: '시로우미 미루루',
-  fileNo: '024',
+  fileNo: '000',
+  audioUrl: null,
   videoUrl: null   // MP4 렌더링이 붙으면 여기에 URL이 들어간다
 };
 
@@ -998,17 +1001,37 @@ const MANUAL = {
 /* ---- 처방전 채우기 ----
    Firestore humans/{code} 문서 형태: {
      humanNumber, nickname, features:[string], cautions:[string],
-     cares:[{name, duration}], status
+     cares:[{name, duration}], status, audioUrl
    } */
 function openManual(h){
   const no = String(h.humanNumber).padStart(3,'0');
   document.getElementById('mNo').textContent      = 'HUMAN No.' + no;
   document.getElementById('mNick').textContent    = h.nickname + ' 인간님';
   document.getElementById('mStampNo').textContent = 'No.' + no;
-  document.getElementById('mFeatures').innerHTML  = (h.features||[]).map(f => '<li>' + f + '</li>').join('');
-  document.getElementById('mCautions').innerHTML  = (h.cautions||[]).map(c => '<li>' + c + '</li>').join('');
+  document.getElementById('mStatus').textContent  = h.status || 'STABLE';
+  document.getElementById('mFeatures').innerHTML  = (h.features||[]).map(f => '<li>' + esc(f) + '</li>').join('');
+  document.getElementById('mCautions').innerHTML  = (h.cautions||[]).map(c => '<li>' + esc(c) + '</li>').join('');
   document.getElementById('mCares').innerHTML =
-    (h.cares||[]).map(c => '<li class="care-li"><span>' + c.name + '</span><em>' + (c.duration||'') + '</em></li>').join('');
+    (h.cares||[]).map(c => '<li class="care-li"><span>' + esc(c.name) + '</span><em>' + esc(c.duration||'') + '</em></li>').join('');
+
+  // 관리 음성 — humans 문서의 audioUrl을 그대로 재생한다
+  const au = document.getElementById('mAudio');
+  const desc = document.getElementById('mMediaDesc');
+  if(h.audioUrl){
+    au.src = h.audioUrl;
+    au.classList.add('is-on');
+    desc.textContent = '방송에서 녹음한 개인 ASMR';
+    au.onloadedmetadata = ()=>{
+      if(!isFinite(au.duration)) return;
+      const s = Math.floor(au.duration);
+      desc.textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' +
+                         String(s%60).padStart(2,'0') + ' · 방송에서 녹음한 개인 ASMR';
+    };
+  }else{
+    au.removeAttribute('src');
+    au.classList.remove('is-on');
+    desc.textContent = '아직 녹음이 등록되지 않았어요';
+  }
 
   // 이미지·MP4 다운로드에 쓰일 데이터도 함께 갈아끼운다
   MANUAL.no = 'HUMAN No.' + no;
@@ -1018,9 +1041,27 @@ function openManual(h){
   MANUAL.cares = (h.cares||[]).map(c => [c.name, c.duration || '']);
   MANUAL.status = h.status || 'STABLE';
   MANUAL.fileNo = no;
+  MANUAL.audioUrl = h.audioUrl || null;
   MANUAL.videoUrl = h.videoUrl || null;
 
   go('my-cert');
+}
+
+/* ---- 아직 인증 전인 신청서 ---- */
+function openWaiting(a, code){
+  document.getElementById('waitName').textContent = a.nickname || '—';
+  document.getElementById('waitCode').textContent = code;
+  const ts = a.createdAt;
+  if(ts && ts.toDate){
+    const d = ts.toDate();
+    document.getElementById('waitDate').textContent =
+      d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+  }else{
+    document.getElementById('waitDate').textContent = '—';
+  }
+  document.getElementById('waitNick').innerHTML =
+    esc(a.nickname || '인간님') + ' 인간님의 데이터는 안전하게 보관 중이에요.<br>선정되면 이 화면에서 바로 알려드릴게요.';
+  go('my-wait');
 }
 
 /* ---- 코드 조회 ---- */
@@ -1031,9 +1072,10 @@ async function lookupCode(){
   const btn = document.getElementById('btnOpenCode');
   btn.disabled = true; btn.textContent = '찾는 중…';
   try{
-    const result = await window.LuluDB.lookupByCode(raw);
+    const DB = await whenReady();
+    const result = await DB.lookupByCode(raw);
     if(result.state === 'certified'){ openManual(result.data); return; }
-    if(result.state === 'pending'){ go('my-wait'); return; }
+    if(result.state === 'pending'){ openWaiting(result.data, result.code); return; }
     toast('해당하는 등록 코드를 찾지 못했어요');
   }catch(err){
     console.error(err);
@@ -1047,6 +1089,74 @@ document.getElementById('logCode').addEventListener('keydown', e=>{
   if(e.key === 'Enter') lookupCode();
 });
 
+/* ============================================================
+   공개 선반 — 인증된 인간님을 약봉투로 늘어놓는다.
+   gallery 컬렉션에는 닉네임과 번호만 있고 등록 코드는 없다.
+   그래서 목록은 누구나 볼 수 있지만, 처방전을 여는 열쇠는 여전히
+   본인이 가진 등록 코드뿐이다.
+   ============================================================ */
+const G_TONES = ['','tone-mint','tone-pink','tone-lav','tone-yellow'];
+const G_BELUGA = '<svg viewBox="0 0 100 60"><path d="M6 31c0-11 12-20 30-20 12 0 20 4 25 8l14-9-3 15 3 15-14-9c-5 4-13 8-25 8C18 39 6 42 6 31z"/><circle cx="27" cy="26" r="4.2" fill="#5E86A0"/></svg>';
+
+let galleryLoaded = false;
+async function loadGallery(){
+  if(galleryLoaded) return;
+  const shelf = document.getElementById('galleryShelf');
+  try{
+    const DB = await whenReady();
+    const list = await DB.fetchGallery(24);
+
+    if(!list.length){
+      shelf.innerHTML =
+        '<div class="empty" style="padding:32px 20px">' +
+        '<div class="empty-mark">🫧</div>' +
+        '<h3>아직 인증된 인간님이 없어요</h3>' +
+        '<p>첫 번째 인간번호의 주인공이 되어보세요.</p></div>';
+      galleryLoaded = true;
+      return;
+    }
+
+    let html = '';
+    for(let i = 0; i < list.length; i += 2){
+      html += '<div class="shelf-block"><div class="shelf-row">';
+      list.slice(i, i + 2).forEach(g=>{
+        const tone = G_TONES[g.humanNumber % G_TONES.length];
+        const no = String(g.humanNumber).padStart(3, '0');
+        html +=
+          '<button class="pouch" type="button">' +
+            '<div class="bag ' + tone + '">' +
+              '<div class="bag-band"></div>' +
+              '<div class="bag-clip"><i></i><i></i><i></i></div>' +
+              '<div class="bag-window">' + G_BELUGA + '</div>' +
+              '<div class="bag-lock">🔒</div>' +
+            '</div>' +
+            '<div class="tag"><b>No.' + no + '</b><span>' + esc(g.nickname || '이름 없음') + '</span></div>' +
+          '</button>';
+      });
+      // 한 칸만 남으면 자리를 비워 선반 균형을 맞춘다
+      if(list.length - i === 1) html += '<div></div>';
+      html += '</div><div class="shelf-board"></div></div>';
+    }
+    shelf.innerHTML = html;
+    galleryLoaded = true;
+  }catch(err){
+    console.error(err);
+    shelf.innerHTML = '<p class="t-small" style="text-align:center;padding:20px">선반을 불러오지 못했어요.</p>';
+  }
+}
+
+/* 남의 봉투는 열리지 않는다 — 코드 입력칸으로 안내 */
+document.getElementById('galleryShelf').addEventListener('click', e=>{
+  if(!e.target.closest('.pouch')) return;
+  toast('내 등록 코드를 입력하면 열려요');
+  const input = document.getElementById('logCode');
+  input.focus();
+  input.scrollIntoView({ behavior:'smooth', block:'center' });
+});
+
+/* ============================================================
+   사용설명서 PNG 그리기
+   ============================================================ */
 function rr(ctx,x,y,w,h,r){
   ctx.beginPath();
   ctx.moveTo(x+r,y);
@@ -1170,9 +1280,7 @@ function drawManual(){
 
 /* ============================================================
    사용설명서 다운로드
-   실제 서비스에서는 사용설명서 + 관리 음성이 합쳐진 MP4가 지급된다.
-   MANUAL.videoUrl 이 채워져 있으면 그 파일을, 아직 렌더링 전이면
-   같은 내용의 이미지를 대신 내려준다.
+   MP4 렌더링이 붙기 전까지는 이미지로 내려준다.
    ============================================================ */
 document.getElementById('btnSaveImg').addEventListener('click', async ()=>{
   if(MANUAL.videoUrl){
@@ -1206,4 +1314,3 @@ document.getElementById('btnSaveImg').addEventListener('click', async ()=>{
 </script>
 </body>
 </html>
-
