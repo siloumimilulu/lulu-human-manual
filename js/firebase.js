@@ -6,8 +6,8 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc,
-  collection, query, where, orderBy, onSnapshot,
+  getFirestore, doc, getDoc, getDocs, setDoc, updateDoc,
+  collection, query, where, orderBy, limit, onSnapshot,
   runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import {
@@ -99,6 +99,18 @@ async function lookupByCode(rawCode){
   return { state: 'not_found', code };
 }
 
+/* ---- 공개 선반 ----
+   기록 화면에 늘어놓을 목록. humans 컬렉션은 개인 답변까지 들어 있어
+   시청자에게 열 수 없으므로, 인증할 때 닉네임과 번호만 따로 적어둔
+   gallery 컬렉션을 읽는다. 문서 ID는 인간번호다 — 등록 코드를 ID로 쓰면
+   목록을 읽는 것만으로 남의 열쇠가 노출되기 때문이다. */
+async function fetchGallery(max = 24){
+  await ready;
+  const q = query(collection(db, 'gallery'), orderBy('humanNumber', 'desc'), limit(max));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => d.data());
+}
+
 /* ============================================================
    OBS(루루) 쪽 — signInAsLulu() 이후에만 정상 동작한다.
    ============================================================ */
@@ -136,6 +148,14 @@ async function certify(regCode, manual){
       status: 'STABLE',
       certifiedAt: serverTimestamp()
     });
+
+    // 공개 선반용 — 닉네임과 번호만. 등록 코드는 절대 넣지 않는다.
+    tx.set(doc(db, 'gallery', String(next).padStart(4, '0')), {
+      humanNumber: next,
+      nickname: manual.nickname,
+      certifiedAt: serverTimestamp()
+    });
+
     tx.update(appRef, { status: 'certified', humanNumber: next });
     return next;
   });
@@ -162,6 +182,6 @@ async function getCertifiedCount(){
 
 window.LuluDB = {
   ready, signInAsLulu,
-  submitApplication, lookupByCode, getCertifiedCount,
+  submitApplication, lookupByCode, getCertifiedCount, fetchGallery,
   subscribeShelf, certify, uploadAudio
 };
